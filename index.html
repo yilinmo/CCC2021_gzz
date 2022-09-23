@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <title>A Distributed Implementation of Steady-State Kalman Filter</title>
-<meta name="author" content="Xu Yang, Jiaqi Yan, Yilin Mo"/>
-<meta name="description" content="pre for gzz of CCC2021"/>
+<meta name="author" content="Yilin Mo"/>
+<meta name="description" content="talk on 2022.09.24"/>
 <meta name="keywords" content="distributed estimation; sensor network; Kalman filter; Consensus Algorithm"/>
 <style type="text/css">
 .underline { text-decoration: underline; }
@@ -46,13 +46,10 @@
 </div>
 <div class="talk-author">
   	<p style="font-size:55px;text-align:center;">
-	  	Xu Yang, Jiaqi Yan, Yilin Mo, and Keyou You
+	  	Yilin Mo
 	</p>
 	<p style="font-size:35px;text-align:center;">
 		<strong style="color:black;">Department of Automation, Tsinghua University<br></br></strong>
-	</p>
-	<p style="font-size:40px;text-align:center;">
-		40th Chinese Control Conference, July 2021
 	</p>
 </div>
 <div class="c-stack" style="margin-right: 1%;">
@@ -67,6 +64,7 @@
 		<li><a href="#slide-background">Background and introduction</a></li>
 		<li><a href="#slide-kf">Distributed state estimation algorithm</a></li>
 		<li><a href="#slide-simulation">Simulation and experiment</a></li>
+        <li><a href="#slide-extension">Extensions</a></li>
 		<li><a href="#slide-conclusion">Conclusion</a></li>
 	</ul>
 	</div>
@@ -76,7 +74,7 @@
 
 <!--Background and intro-->
 
-<section id="slide-background-rack" class="center">
+<section id="slide-background" class="center">
 	<h3 id="h3_background" hidden>Background</h3>
 	<h4 id="h4_background3">BACKGROUND: ENERGY EFFICIENCY of DATA CENTER</h4>
 	<span>
@@ -1048,6 +1046,153 @@
 <section id="slide-indoor-gif" class="center" data-background-image="./figures/raw/simulation/indoor_animation.gif" data-background-size="contain">
 </section>
 
+<!--Event-based-->
+<section id="slide-extension" class="center">
+	<h4 id="event-based">Extension: Distributed Estimation with Event-triggered Communications</h4>
+    <div class="leftcol" style="font-size:30px;">
+        <ul>
+            <li>Update the residual $z_i(k)$:
+                $$
+                    \begin{aligned}
+                    z_i(k)=y_i(k+1)-\beta^T\hat\xi_i(k),\\
+                    \hat\xi_i(k+1)=S\hat\xi_i(k)+{\bf{1}_n} z_i(k).
+                    \end{aligned}
+                $$
+            </li>
+            <li>
+                Run the synchronization algorithm:
+                $$
+                    \begin{aligned}
+                    \eta_i(k+1)=\tilde S\eta_i(k)+L_iz_i(k)+\\
+                    {\color{var(--myred)}\tilde B\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k))}
+                    \end{aligned}
+                $$
+            </li>
+            <li>
+                Update the local estimate:
+                $$
+                    \breve x_i(k+1)=mF\eta_i(k+1).
+                $$
+            </li>
+        </ul>
+        </div>
+    
+        <div class="r-stack">
+            <img src="./figures/raw/event_based.png">
+        </div>
+</section>
+<section id="slide-event-based" class="center">
+    <h2 id="h2_extension" hidden>Extension</h2>
+    <h3 id="h2_extension" hidden>Extension</h3>
+	<h4 id="event-based">Event-based Synchronization of Stochastic Linear Systems</h4>
+	<div class="outline-text-2" id="text-ouralgorithm"></div>
+
+	<p style="font-size:35px;">
+        <ul>
+			<li>Consider the synchronization protocol:
+                $$
+                    u_i(k)=\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k)),
+                $$
+        where $\hat\Delta_i(k)\triangleq \Gamma\hat\eta_i(k)\in\mathbb{R}^m$, $\hat\eta_i(k)\triangleq S^{(k-k_s^i)}\eta_i(k_s^i),k\in[k_s^i, k_{s+1}^i)$.</li>
+        <li>
+            Triggering condition example: event occurs when
+            $$
+                ||\hat\eta_i(k)-\eta_i(k)||^2\ge c_0+c_1\rho^k,
+            $$
+            where $c_0,c_1>0$ and $\rho$.
+        </li>
+        <li>
+            <strong><em style="color:var(--myred);">Boundedness of error</em></strong> is guaranteed by <strong><em style="color:var(--myblue);">$c$-martingales</em></strong>.
+        </li>
+	</p>
+</section>
+
+
+<!--Resilient est-->
+<section id="dis problem" class="center">
+	<h4 id="event-based">Extension: Distributed Resilient Estimation</h4>
+	<div class="imgcontainer">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/dis_opt_new1.png" width="1000" height="800" style="margin-bottom:0%; margin-right:0%;">
+		</div>
+	</div>
+<h5>For benign sensors:</h5>
+<div>do several optimziation+consensus iterations at time $k$ </div>
+<div>$\to$ the optimization problem at time $k$ may not reach its optimum </div>
+<div>$\to$ move on to the next problem $k$ </div>
+</section>
+
+<section id="dis problem 2">
+	<h4 id="event-based">Extension: Distributed Resilient Estimation</h4>
+	<div class="imgcontainer">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/dis_opt_new2.png" width="1000" height="800" style="margin-bottom:0%; margin-right:0%;">
+		</div>
+	</div>
+	<h5>For malicious sensors:</h5>
+	<div>Only do several consensus iterations </div>
+	<div>$\to$ move on to the next problem $k$ </div>
+</section>
+<section id="proof structure">
+	<h4 id="h4_problem-formulation">Proof structure </h4>
+	<div class="imgcontainer">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/proof_structure.png" width="1200" height="1000" style="margin-bottom:0%; margin-right:0%;">
+		</div>
+	</div>
+    <div class="imgcontainer">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/error_decomp.PNG" width="1200" height="200" style="margin-bottom:0%; margin-right:0%;">
+		</div>
+	</div>
+</section>
+<section>
+	<h4>IEEE 68 bus system</h4>
+    <div class="leftcol" style="font-size:30px;">
+        <ul>
+            <li style="font-size: 33px;">Bus 1-16: generator bus; Bus 17-68: load bus </li>
+            <li style="font-size: 33px;">$68\times 2=136$ states (phase angle, angle velocity)</li>
+            <li style="font-size: 33px;">$68\times 3=204$ measurements (phase angle, angle velocity, elec power)</li>
+            <li>
+                $$	\dot{\theta}_{i}(t) =\omega_{i}(t), $$
+	            $$\dot{\omega}_{i}(t) =-\frac{1}{m_{i}}\left[D_{i} \omega_{i}(t)+\sum_{j \in \mathcal{N}_{i}} P_{t i e}^{i j}(t)- P_{i}(t)+w_{i}(t)\right].$$
+                $$	\left[\begin{array}{ccc}
+            y_{i_1}(k) & y_{i_2}(k) & y_{i_3}(k)
+            \end{array}\right]^\top=\left[\begin{array}{ccc}
+            P_{e l e c, i}(k) & \theta_{i}(k)& \omega_{i}(k)
+            \end{array}\right]^{\top}+v_{i}(k), $$
+            </li>
+        </ul>
+    </div>
+	<div class="r-stack">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/IEEE-68-bus-test-system.png" width="600" height="300" style="margin-top:5%; margin-right:0%;">
+		</div>
+	</div>
+</section>
+<section style="font-size: 35px;">
+	<h4>Complexity Challenge</h4>
+    If 4 sensors are attacked or break down, the number of possible combinations is
+	$${204 \choose 4}=7.006\times 10^7$$ 
+
+	It is almost impossible to identify which is the true case in real time. However, 204 local estimators are needed in our method.
+	<div class="imgcontainer">
+		<div about="" typeof="dcmitype:StillImage" class="figure">
+			<img src="./figures/resilient/complexity_table.png" width="1200" height="350" style="margin-top:5%; margin-right:0%;">
+		</div>
+	</div>
+</section>
+
+<section>
+	 <h4>Simulation Results: Distributed Resilient Estimation</h4> 
+		<div class="imgcontainer">
+			<div >
+				<p>
+					<img data-src="./figures/resilient/IEEEbus17-54.png" alt="Figure" style="max-height:400vh" />
+				</p>
+			</div>
+		</div>
+</section>
 <!--Conclusion-->
 <section id="slide-conclusion" class="center">
 	<h2 id="h2_conclusion" hidden>Conclusion</h2>
@@ -1060,6 +1205,7 @@
 		<li>We bridge the gap between the problem of <strong><em style="color:var(--myred);">linear system synchronization</em></strong> and <strong><em style="color:var(--myred);">DSE</em></strong>. All of the <strong><em style="color:var(--myred);">strong synchronization algorithms</em></strong> can be applied in our framework.</li>
 		<li>By performing model reduction, the <strong><em style="color:var(--myred);">message complexity</em></strong> can be reduced to <strong><em style="color:var(--myred);">$O(\min(m, n))$</em></strong>.</li>
 		<li>The <strong><em style="color:var(--myred);">performance</em></strong> of our algorithm is <strong><em style="color:var(--myred);">analyzed</em></strong> and <strong><em style="color:var(--myred);">validated</em></strong> with simulation and experiments.</li>
+        <li>The result can be extended in various cases.</li>
 	</ul>
 	<div class="slide-footer"><br></div>
 </section>
