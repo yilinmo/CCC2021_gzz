@@ -39,7 +39,7 @@
 <!-- <a class="nooutlink" href="url"><img class="state-background your-logo-class" src="whatever.png" alt="Whatever" /></a> -->
 
 <div class="talk-title">
-    <h1 class="no-toc-progress" style="text-align:center;">A Distributed Implementation of Steady-State Kalman Filter</h1>
+    <h1 class="no-toc-progress" style="text-align:center;">Distributed State Estimation via Decomposing Kalman Filter</h1>
 </div>
 <div class="talk-subtitle">
     <p></p>
@@ -1119,7 +1119,7 @@
 <h5>For benign sensors:</h5>
 <div>do several optimziation+consensus iterations at time $k$ </div>
 <div>$\to$ the optimization problem at time $k$ may not reach its optimum </div>
-<div>$\to$ move on to the next problem $k$ </div>
+<div>$\to$ move on to the next problem at time $k+1$ </div>
 </section>
 
 <section id="dis problem 2">
@@ -1131,7 +1131,7 @@
 	</div>
 	<h5>For malicious sensors:</h5>
 	<div>Only do several consensus iterations </div>
-	<div>$\to$ move on to the next problem $k$ </div>
+	<div>$\to$ move on to the next problem at time $k+1$ </div>
 </section>
 <section id="proof structure">
 	<h4 id="h4_problem-formulation">Proof structure </h4>
