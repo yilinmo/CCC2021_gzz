@@ -1,1246 +1,1390 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<title>A Distributed Implementation of Steady-State Kalman Filter</title>
-<meta name="author" content="Yilin Mo"/>
-<meta name="description" content="talk on 2022.09.24"/>
-<meta name="keywords" content="distributed estimation; sensor network; Kalman filter; Consensus Algorithm"/>
-<style type="text/css">
+  <head>
+    <meta charset="utf-8"/>
+    <title>信息物理系统中的分布式安全状态估计</title>
+    <meta name="author" content="Yilin Mo"/>
+    <meta name="description" content="talk on 2022.11.20"/>
+    <meta name="keywords" content="distributed estimation; sensor network; Kalman filter; Consensus Algorithm"/>
+    <style type="text/css">
 .underline { text-decoration: underline; }
-</style>
-<link rel="stylesheet" href="./reveal.js/dist/reveal.css"/>
-<link rel="stylesheet" href="./reveal.js/dist/theme/oer-reveal.css" id="theme"/>
-<link rel="stylesheet" href="./reveal.js/plugin/accessibility/helper.css"/>
-<link rel="stylesheet" href="./reveal.js/plugin/toc-progress/toc-progress.css"/>
-<link rel="stylesheet" href="./reveal.js/dist/theme/toc-style.css"/>
-<link rel="stylesheet" href="./reveal.js/dist/theme/fonts/source-sans-pro/source-sans-pro.css"/>
-<link rel="stylesheet" href="./reveal.js/plugin/mine/font-awesome.min.css">
-</head>
-<body prefix="dc: http://purl.org/dc/elements/1.1/ dcterms: http://purl.org/dc/terms/ dcmitype: http://purl.org/dc/dcmitype/ cc: http://creativecommons.org/ns#" typeof="dcmitype:InteractiveResource">
-	<style>
+    </style>
+    <link rel="stylesheet" href="./reveal.js/dist/reveal.css"/>
+    <link rel="stylesheet" href="./reveal.js/dist/theme/oer-reveal.css" id="theme"/>
+    <link rel="stylesheet" href="./reveal.js/plugin/accessibility/helper.css"/>
+    <link rel="stylesheet" href="./reveal.js/plugin/toc-progress/toc-progress.css"/>
+    <link rel="stylesheet" href="./reveal.js/dist/theme/toc-style.css"/>
+    <link rel="stylesheet" href="./reveal.js/dist/theme/fonts/source-sans-pro/source-sans-pro.css"/>
+    <link rel="stylesheet" href="./reveal.js/plugin/mine/font-awesome.min.css">
+  </head>
+  <body prefix="dc: http://purl.org/dc/elements/1.1/ dcterms: http://purl.org/dc/terms/ dcmitype: http://purl.org/dc/dcmitype/ cc: http://creativecommons.org/ns#" typeof="dcmitype:InteractiveResource">
+    <style>
+:root{
+  --myred: #981E32;
+}
 		:root{
-			--myred: #981E32;
+		  --myblue: #0582CA;
 		}
-		:root{
-			--myblue: #0582CA;
-		}
-	</style>
-<div class="reveal">
-<div class="slides">
+    </style>
 
-<section>
-<section id="sec-title-slide" data-state="no-toc-progress"  class="center">
-<!-- The following copyright information only applies to the title slide. -->
-<!-- SPDX-FileCopyrightText: 2017-2019 Jens Lechtenbörger -->
-<!-- SPDX-License-Identifier: CC0-1.0 -->
-<!-- This is an HTML template for the title slide. -->
-<!-- Embed logos as necessary. -->
-<!-- <a class="nooutlink" href="url"><img class="state-background your-logo-class" src="whatever.png" alt="Whatever" /></a> -->
+    <div class="reveal">
+      <div class="slides">
 
-<div class="talk-title">
-    <h1 class="no-toc-progress" style="text-align:center;">Distributed State Estimation via Decomposing Kalman Filter</h1>
-</div>
-<div class="talk-subtitle">
-    <p></p>
-</div>
-<div class="talk-author">
-  	<p style="font-size:55px;text-align:center;">
-	  	Yilin Mo
-	</p>
-	<p style="font-size:35px;text-align:center;">
-		<strong style="color:black;">Department of Automation, Tsinghua University<br></br></strong>
-	</p>
-</div>
-<div class="c-stack" style="margin-right: 1%;">
-	<img src="./figures/raw/title/logo.png" width="298" height="50">
-</div>
-</section>
+	<section>
+	  <section id="sec-title-slide" data-state="no-toc-progress"  class="center">
+	    <!-- The following copyright information only applies to the title slide. -->
+	    <!-- SPDX-FileCopyrightText: 2017-2019 Jens Lechtenbörger -->
+	    <!-- SPDX-License-Identifier: CC0-1.0 -->
+	    <!-- This is an HTML template for the title slide. -->
+	    <!-- Embed logos as necessary. -->
+	    <!-- <a class="nooutlink" href="url"><img class="state-background your-logo-class" src="whatever.png" alt="Whatever" /></a> -->
 
-<section id="slide-content" class="center">
-	<h3 id="content">Table of Contents</h3>
-	<div id="text-table-of-contents">
-	<ul>
-		<li><a href="#slide-background">Background and introduction</a></li>
-		<li><a href="#slide-kf">Distributed state estimation algorithm</a></li>
-		<li><a href="#slide-simulation">Simulation and experiment</a></li>
-        <li><a href="#slide-extension">Extensions</a></li>
-		<li><a href="#slide-conclusion">Conclusion</a></li>
-	</ul>
-	</div>
-	
-	<div class="slide-footer"><br></div>
-</section>
+	    <div class="talk-title">
+	      <h1 class="no-toc-progress" style="text-align:center;">信息物理系统分布式安全状态估计</h1>
+	    </div>
+	    <div class="talk-subtitle">
+	      <p></p>
+	    </div>
+	    <div class="talk-author">
+	      <p style="font-size:55px;text-align:center;">
+	      莫一林
+	      </p>
+	      <p style="font-size:35px;text-align:center;">
+	      <strong style="color:black;"><br>清华大学  自动化系</br></strong>
+	      </p>
+	    </div>
+	    <div class="c-stack" style="margin-right: 1%;">
+	      <img src="./figures/raw/title/logo.png" width="298" height="50">
+	    </div>
+	  </section>
 
-<!--Background and intro-->
+	  <!--Background and intro-->
 
-<section id="slide-background" class="center">
-	<h3 id="h3_background" hidden>Background</h3>
-	<h4 id="h4_background3">BACKGROUND: ENERGY EFFICIENCY of DATA CENTER</h4>
-	<span>
-		<div class="r-stack">
-			<div class="fragment fade-out" data-fragment-index="1" style="margin-left: 20%;">
-					<img src="./figures/raw/background/energy_consumption.png" width="406" height="370">
-					<p style="text-align:center;font-size:28px;margin-top: 67%;margin-left: 20%;"> Fraction of data center electricity use <a class="org-ref-reference" href="#slide-bibliography">[Shehabi2016]</a></p>
-			</div>
-			<div class="fragment fade-in" data-fragment-index="1" style="margin-left: 18%;">
-				<img src="./figures/raw/background/data-center.jpg" width="480" height="370">
-				<p style="text-align:center;font-size:28px;margin-top: 60%;margin-left: 20%;">Simulation of the temperature field of a data center <a class="org-ref-reference" href="#slide-bibliography">[Jia2020]</a></p>
-			</div>
+	  <section id="slide-background" class="center">
+	    <h3 id="h3_background" hidden>Background</h3>
+	    <h4 id="h4_background3">BACKGROUND: ENERGY EFFICIENCY of DATA CENTER</h4>
+	    <span>
+	      <div class="r-stack">
+		<div class="fragment fade-out" data-fragment-index="1" style="margin-left: 20%;">
+		  <img src="./figures/raw/background/energy_consumption.png" width="406" height="370">
+		  <p style="text-align:center;font-size:28px;margin-top: 67%;margin-left: 20%;"> Fraction of data center electricity use <a class="org-ref-reference" href="#slide-bibliography">[Shehabi2016]</a></p>
 		</div>
-		<div>
-			<ul style="font-size:40px;">
-				<li>Balance between <strong><em style="color:var(--myred);">energy efficiency</em></strong> and <strong><em style="color:var(--myred);">server reliability</em></strong>.
-				<li>Sensor networks enables <strong><em style="color:var(--myred);">accurate environmental monitoring</em></strong> with <strong><em style="color:var(--myred);">fine spatial and temporal granularity</em></strong>.</li>
-			</ul>
+		<div class="fragment fade-in" data-fragment-index="1" style="margin-left: 18%;">
+		  <img src="./figures/raw/background/data-center.jpg" width="480" height="370">
+		  <p style="text-align:center;font-size:28px;margin-top: 60%;margin-left: 20%;">Simulation of the temperature field of a data center <a class="org-ref-reference" href="#slide-bibliography">[Jia2020]</a></p>
 		</div>
-	</span>
-</section>
-
-<section id="slide-background-carbon" class="center">
-	<h2 id="Background and introduction" hidden>Background and introduction</h2>
-	<h4 id="h4_background1">BACKGROUND: CO$_2$ EMISSION MONITORING</h4>
-
-	<div>
-		<p style="font-size:40px;">
-			<div class="r-stack">
-				<span class="fragment fade-out" data-fragment-index="1">
-					<img src="./figures/raw/background/CO2.jpg" width="700" height="280">
-					<p style="text-align:center;font-size:28px;" style="margin-top: 8%;">
-						Estimates of CO$_2$ emission with different methods <a class="org-ref-reference" href="#slide-bibliography">[Basu2020]</a>
-					</p>
-				</span>
-				<span class="fragment fade-in" data-fragment-index="1">
-					<img src="./figures/raw/background/citysee.png" width="700" height="280">
-					<p style="text-align:center;font-size:28px;" style="margin-top: 8%;">Urban CO$_2$ monitoring with sensor networks <a class="org-ref-reference" href="#slide-bibliography">[Mao2012]</a></p>
-				</span>
-			</div>
-			<div>
-				<ul style="font-size:40px;">
-					<li>Achieve <strong><em style="color:var(--myred);">carbon emission peak </em></strong>before 2030 and <strong><em style="color:var(--myred);">carbon neutrality</em></strong> before 2060.
-					<li>CO$_2$ emission monitoring is hard.</li>
-						<ul style="font-size:35px;">
-							<li>Traditional methods: <strong><em style="color:var(--myred);">inaccurate</em></strong> and <strong><em style="color:var(--myred);">not suitable for long-term measurement</em></strong>.
-							<li>Sensor networks enable <strong><em style="color:var(--myred);">accurate, large-scale</em></strong> and <strong><em style="color:var(--myred);">real time</em></strong> CO$_2$ monitoring.</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-			</div>
-		</p>
-	</div>
-</section>
-
-<section id="slide-intro" class="center">
-	<h3 id="h3_intro" hidden>Background</h3>
-	<h4 id="h4_intro">BACKGROUND: DISTRIBUTED STATE ESTIMATION</h4>
-
-	<div style="font-size:40px;">
-		<ul>
-			<li>Real time data transmitting and processing: very challenging in terms of <strong><em style="color:var(--myred);"></em>bandwidth and computing</strong>.</li>
-			<li>Solution: <strong><em style="color:var(--myred);">distributed algorithms.</em></strong> 
-				<ul style="font-size:35px;">
-					<li> <strong><em style="color:var(--myred);"></em>Better robustness</em></strong> for a single point of failure.</li>
-					<li><strong><em style="color:var(--myred);">Low communication and computation burden</em></strong>.</li>
-					<li><strong><em style="color:var(--myred);">Scalablility.</em></strong></li>
-				</ul>
-			</li>
-			<li class="fragment fade-in" data-fragment-index="1"><strong><em style="color:var(--myred);">Distributed state estimation (DSE)</em></strong>: each sensor estimates the state of the system with 
-				<ul style="font-size:35px;">
-					<li> its own <strong><em style="color:var(--myred);">measurement</em></strong>, and</li>
-					<li> <strong><em style="color:var(--myred);">communication</em></strong> with its neighbors.</li>
-				</ul>
-			</li>
-			<li class="fragment fade-in" data-fragment-index="1">How to <strong><em style="color:var(--myred);">analyze</em></strong> and <strong><em style="color:var(--myred);">minimize</em></strong> the <strong><em style="color:var(--myred);">performance gap</em></strong> between DSE and the optimal centralized Kalman filter (CKF)?</li>
+	      </div>
+	      <div>
+		<ul style="font-size:40px;">
+		  <li>Balance between <strong><em style="color:var(--myred);">energy efficiency</em></strong> and <strong><em style="color:var(--myred);">server reliability</em></strong>.
+		    <li>Sensor networks enables <strong><em style="color:var(--myred);">accurate environmental monitoring</em></strong> with <strong><em style="color:var(--myred);">fine spatial and temporal granularity</em></strong>.</li>
 		</ul>
-	</div>
-</section>
+	      </div>
+	    </span>
+	  </section>
 
-<section id="slide-problem-formulation" class="center">
-	<h3 id="h3_problem_formulation" hidden>Problem formulation</h3>
-	<h4 id="h4_problem-formulation">PROBLEM FORMULATION</h4>
-	<div class="outline-text-2" data-id="text-kf">
-	</div>
-	<ul style="font-size:30px;">
-	<li> System equation:
+	  <section id="slide-background-carbon" class="center">
+	    <h2 id="Background and introduction" hidden>Background and introduction</h2>
+	    <h4 id="h4_background1">BACKGROUND: CO$_2$ EMISSION MONITORING</h4>
+
+	    <div>
+	      <p style="font-size:40px;">
+	      <div class="r-stack">
+		<span class="fragment fade-out" data-fragment-index="1">
+		  <img src="./figures/raw/background/CO2.jpg" width="700" height="280">
+		  <p style="text-align:center;font-size:28px;" style="margin-top: 8%;">
+		  Estimates of CO$_2$ emission with different methods <a class="org-ref-reference" href="#slide-bibliography">[Basu2020]</a>
+		  </p>
+		</span>
+		<span class="fragment fade-in" data-fragment-index="1">
+		  <img src="./figures/raw/background/citysee.png" width="700" height="280">
+		  <p style="text-align:center;font-size:28px;" style="margin-top: 8%;">Urban CO$_2$ monitoring with sensor networks <a class="org-ref-reference" href="#slide-bibliography">[Mao2012]</a></p>
+		</span>
+	      </div>
+	      <div>
+		<ul style="font-size:40px;">
+		  <li>Achieve <strong><em style="color:var(--myred);">carbon emission peak </em></strong>before 2030 and <strong><em style="color:var(--myred);">carbon neutrality</em></strong> before 2060.
+		    <li>CO$_2$ emission monitoring is hard.</li>
+		    <ul style="font-size:35px;">
+		      <li>Traditional methods: <strong><em style="color:var(--myred);">inaccurate</em></strong> and <strong><em style="color:var(--myred);">not suitable for long-term measurement</em></strong>.
+			<li>Sensor networks enable <strong><em style="color:var(--myred);">accurate, large-scale</em></strong> and <strong><em style="color:var(--myred);">real time</em></strong> CO$_2$ monitoring.</li>
+		    </ul>
+		      </li>
+		</ul>
+		  </li>
+	      </div>
+	      </p>
+	    </div>
+	  </section>
+
+	  <section id="slide-intro" class="center">
+	    <h3 id="h3_intro" hidden>Background</h3>
+	    <h4 id="h4_intro">BACKGROUND: DISTRIBUTED STATE ESTIMATION</h4>
+
+	    <div style="font-size:40px;">
+	      <ul>
+		<li>Real time data transmitting and processing: very challenging in terms of <strong><em style="color:var(--myred);"></em>bandwidth and computing</strong>.</li>
+		<li>Solution: <strong><em style="color:var(--myred);">distributed algorithms.</em></strong> 
+		  <ul style="font-size:35px;">
+		    <li> <strong><em style="color:var(--myred);"></em>Better robustness</em></strong> for a single point of failure.</li>
+		    <li><strong><em style="color:var(--myred);">Low communication and computation burden</em></strong>.</li>
+		    <li><strong><em style="color:var(--myred);">Scalablility.</em></strong></li>
+		  </ul>
+		</li>
+		<li class="fragment fade-in" data-fragment-index="1"><strong><em style="color:var(--myred);">Distributed state estimation (DSE)</em></strong>: each sensor estimates the state of the system with 
+		  <ul style="font-size:35px;">
+		    <li> its own <strong><em style="color:var(--myred);">measurement</em></strong>, and</li>
+		    <li> <strong><em style="color:var(--myred);">communication</em></strong> with its neighbors.</li>
+		  </ul>
+		</li>
+		<li class="fragment fade-in" data-fragment-index="1">How to <strong><em style="color:var(--myred);">analyze</em></strong> and <strong><em style="color:var(--myred);">minimize</em></strong> the <strong><em style="color:var(--myred);">performance gap</em></strong> between DSE and the optimal centralized Kalman filter (CKF)?</li>
+	      </ul>
+	    </div>
+	  </section>
+
+	  <section id="slide-problem-formulation" class="center">
+	    <h3 id="h3_problem_formulation" hidden>Problem formulation</h3>
+	    <h4 id="h4_problem-formulation">PROBLEM FORMULATION</h4>
+	    <div class="outline-text-2" data-id="text-kf">
+	    </div>
+	    <ul style="font-size:30px;">
+	      <li> System equation:
 		<p style="font-size:25px;">
-			$$
-			x(k+1)=Ax(k)+w(k),
-			$$
+		$$
+		x(k+1)=Ax(k)+w(k),
+		$$
 		</p>
-	where $x(k)\in{\color{var(--myred)}{\mathbb{R}^n}}$, $w(k)\sim\mathcal{N}(0,Q)$.
-	</li>
-	<li> Measurement equation of sensor $i$:
+		where $x(k)\in{\color{var(--myred)}{\mathbb{R}^n}}$, $w(k)\sim\mathcal{N}(0,Q)$.
+	      </li>
+	      <li> Measurement equation of sensor $i$:
 		<p style="font-size:25px;">
-			$$
-				y_i(k)=C_ix(k)+v_i(k).
-			$$
+		$$
+		y_i(k)=C_ix(k)+v_i(k).
+		$$
 		</p>
-	<li> Full measurement equation:
-		<p style="font-size:25px;">
-			$$
-				y(k)=Cx(k)+v(k),
-			$$
-		</p>
-	</li>
-	where <p style="font-size:25px;">
+		<li> Full measurement equation:
+		  <p style="font-size:25px;">
+		  $$
+		  y(k)=Cx(k)+v(k),
+		  $$
+		  </p>
+		</li>
+		where <p style="font-size:25px;">
 		$$
 		y(k)\triangleq \begin{bmatrix}
-			y_1(k)\\
-			\vdots\\
-			y_m(k)
+		y_1(k)\\
+		\vdots\\
+		y_m(k)
 		\end{bmatrix}\in {\color{var(--myred)}\mathbb{R}^m}, C\triangleq \begin{bmatrix}
-			C_1(k)\\
-			\vdots\\
-			C_m(k)
+		C_1(k)\\
+		\vdots\\
+		C_m(k)
 		\end{bmatrix}, v(k)\triangleq \begin{bmatrix}
-			v_1(k)\\
-			\vdots\\
-			v_m(k)
+		v_1(k)\\
+		\vdots\\
+		v_m(k)
 		\end{bmatrix}\sim\mathcal{N}(0,R).
 		$$
-	</p>
-	</li>
-	<li> <strong><em style="color:var(--myred);">$(A,C)$ is observable</em></strong>. Note that <strong><em style="color:var(--myred);">$(A, C_i)$ is not necessarily observable</em></strong>.</li>
-	<li>Each sensor needs to estimate the state $x$.</li>
-	</ul>
-</section>
+		</p>
+	      </li>
+	      <li> <strong><em style="color:var(--myred);">$(A,C)$ is observable</em></strong>. Note that <strong><em style="color:var(--myred);">$(A, C_i)$ is not necessarily observable</em></strong>.</li>
+	      <li>Each sensor needs to estimate the state $x$.</li>
+	    </ul>
+	  </section>
 
-<section id="slide-consensusDSE-review" class="center">
-	<h4 id="h4_consensus-based-DSE-review">DSE LITERATURE REVIEW <a class="org-ref-reference" href="#slide-bibliography">[He2020]</a></h4>
-	<div>
-	<ul style="font-size:30px;">
+	  <section id="slide-consensusDSE-review" class="center">
+	    <h4 id="h4_consensus-based-DSE-review">DSE LITERATURE REVIEW <a class="org-ref-reference" href="#slide-bibliography">[He2020]</a></h4>
+	    <div>
+	      <ul style="font-size:30px;">
 		<li>
-			Consensus on estimate <a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a>
-			$$
-				\hat x_i=\bar x_i+M_i\Big(\sum_{j\in N_i\cup\{i\}}C_i^TR_i^{-1}y_i-(\sum_{j\in N_i\cup\{i\}}C_i^TR_i^{-1}C_i)\bar x_i\Big)+{\color{var(--myred)}\gamma P_i\sum_{j\in N_i}(\bar x_j-\bar x_i)}.
-			$$
+		  Consensus on estimate <a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a>
+		  $$
+		  \hat x_i=\bar x_i+M_i\Big(\sum_{j\in N_i\cup\{i\}}C_i^TR_i^{-1}y_i-(\sum_{j\in N_i\cup\{i\}}C_i^TR_i^{-1}C_i)\bar x_i\Big)+{\color{var(--myred)}\gamma P_i\sum_{j\in N_i}(\bar x_j-\bar x_i)}.
+		  $$
 		</li>
 		<li> Consensus on measurement <a class="org-ref-reference" href="#slide-bibliography">[Li2018]</a>
-			$$
-				\begin{aligned}
-					Y_i&=C_i^TR_i^{-1}C_i, y_i=C_i^TR_i^{-1}y_i,\\
-					{\color{var(--myred)}Y_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i\cup{i}}\pi_{i,j}Y_j}, {\color{var(--myred)}y_i\leftarrow \sum_{j\in N_i\cup{i}}\pi_{i,j}y_j},\\
-					P_i^{-1}&\leftarrow P_i^{-1}+\omega Y_i, P_i^{-1}\hat x_i\leftarrow P_i^{-1}\hat x_i+\omega y_i.\\
-				\end{aligned}
-			$$
+		  $$
+		  \begin{aligned}
+		  Y_i&=C_i^TR_i^{-1}C_i, y_i=C_i^TR_i^{-1}y_i,\\
+		  {\color{var(--myred)}Y_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i\cup{i}}\pi_{i,j}Y_j}, {\color{var(--myred)}y_i\leftarrow \sum_{j\in N_i\cup{i}}\pi_{i,j}y_j},\\
+		  P_i^{-1}&\leftarrow P_i^{-1}+\omega Y_i, P_i^{-1}\hat x_i\leftarrow P_i^{-1}\hat x_i+\omega y_i.\\
+		  \end{aligned}
+		  $$
 		</li>
 		<li>
-			Consensus on probability density function (PDF) <a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a>
-			$$
-				\begin{aligned}
-					{\color{var(--myred)}\Omega_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i}\pi_{i,j}\Omega_j},\\
-					{\color{var(--myred)}q_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i}\pi_{i,j}q_j}.\\
-				\end{aligned}
-			$$
+		  Consensus on probability density function (PDF) <a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a>
+		  $$
+		  \begin{aligned}
+		  {\color{var(--myred)}\Omega_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i}\pi_{i,j}\Omega_j},\\
+		  {\color{var(--myred)}q_i}&{\color{var(--myred)}\leftarrow \sum_{j\in N_i}\pi_{i,j}q_j}.\\
+		  \end{aligned}
+		  $$
 		</li>
-	</ul>
-	</div>
+	      </ul>
+	    </div>
 
-	<div class="slide-footer"><br></div>
-</section>
+	    <div class="slide-footer"><br></div>
+	  </section>
 
-<section id="slide-consensusDSE-review-table" class="center">
-	<h4 id="h4_consensus-based-DSE-review-table">DSE LITERATURE REVIEW</h4>
-	<table>
-		<thead>
-			<tr>
-				<th>Algorithm</th>
-				<th>Consensus on</th>
-				<th>Message complexity</th>
-				<th>Stability</th>
-				<th>Analytical form of variance</th>
-				<th>Global optimality</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a></td>
-				<td>Estimate</td>
-				<td>$O(n)$</td>
-				<td>Yes (if $\gamma$ is small enough)</td>
-				<td>None</td>
-				<td>No</td>
-			</tr>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Li2018]</a></td>
-				<td>Measurement</td>
-				<td>$O(n^2)$</td>
-				<td>Yes (with enough steps of consensus)</td>
-				<td>None</td>
-				<td>Yes (if $A$ is stable and perform infinite steps of consensus)</td>
-			</tr>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a></td>
-				<td>PDF</td>
-				<td>$O(n^2)$</td>
-				<td>Yes (if $A$ is invertible)</td>
-				<td>None</td>
-				<td>No</td>
-			</tr>
-		</tbody>
-	</table>
-</section>
+	  <section id="slide-consensusDSE-review-table" class="center">
+	    <h4 id="h4_consensus-based-DSE-review-table">DSE LITERATURE REVIEW</h4>
+	    <table>
+	      <thead>
+		<tr>
+		  <th>Algorithm</th>
+		  <th>Consensus on</th>
+		  <th>Message complexity</th>
+		  <th>Stability</th>
+		  <th>Analytical form of variance</th>
+		  <th>Global optimality</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a></td>
+		  <td>Estimate</td>
+		  <td>$O(n)$</td>
+		  <td>Yes (if $\gamma$ is small enough)</td>
+		  <td>None</td>
+		  <td>No</td>
+		</tr>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Li2018]</a></td>
+		  <td>Measurement</td>
+		  <td>$O(n^2)$</td>
+		  <td>Yes (with enough steps of consensus)</td>
+		  <td>None</td>
+		  <td>Yes (if $A$ is stable and perform infinite steps of consensus)</td>
+		</tr>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a></td>
+		  <td>PDF</td>
+		  <td>$O(n^2)$</td>
+		  <td>Yes (if $A$ is invertible)</td>
+		  <td>None</td>
+		  <td>No</td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </section>
 
-<section id="slide-consensusDSE-diagram" class="center">
-	<h4 id="h4_Decoupling">DECOUPLING</h4>
-	<div class="leftcol" style="margin-top: -3%;">
-		<img src="./figures/raw/background/comparison.png" width="610" height="450">
-		<p style="text-align:center;font-size:27px;">Diagram of most of existing DSE algorithms</p>
-		<p style="font-size:27px;">
-			<ul>
-				<li>The consensus process is <strong><em style="color:var(--myred);">coupled</em></strong> with the local filter.</li>
-				<li><strong><em style="color:var(--myred);">Hard to analyze</em></strong> the performance.</li>
-			</ul>
-		</p>
-	</div>
+	  <section id="slide-consensusDSE-diagram" class="center">
+	    <h4 id="h4_Decoupling">DECOUPLING</h4>
+	    <div class="leftcol" style="margin-top: -3%;">
+	      <img src="./figures/raw/background/comparison.png" width="610" height="450">
+	      <p style="text-align:center;font-size:27px;">Diagram of most of existing DSE algorithms</p>
+	      <p style="font-size:27px;">
+	      <ul>
+		<li>The consensus process is <strong><em style="color:var(--myred);">coupled</em></strong> with the local filter.</li>
+		<li><strong><em style="color:var(--myred);">Hard to analyze</em></strong> the performance.</li>
+	      </ul>
+	      </p>
+	    </div>
 
-	<div class="rightcol" style="margin-top: -3%;">
-		<img src="./figures/raw/background/blkdiag_background.png" width="610" height="450">
-		<p style="text-align:center;font-size:27px;">Diagram of the DSE algorithm with decoupling</p>
-		<p style="font-size:27px;">
-			<ul>
-				<li>Can we <strong><em style="color:var(--myred);">decouple</em></strong> the local filter from the consensus process?</li>
-					<ul>
-						<li>How to <strong><em style="color:var(--myred);">design local filters</em></strong> without information loss?</li>
-						<li>How to <strong><em style="color:var(--myred);">leverage the consensus algorithm</em></strong>?</li>
-					</ul>
-			</ul>
-		</p>
-	</div>
-
-</section>
-
-<!--DSE algorithm:kf-->
-
-<section if="slide-original-kf" class="center">
-	<h4 id="h4_kf">KALMAN FILTER</h4>
-	<p style="font-size:35px;">
-		Kalman filter is the <strong><em style="color:var(--myred);">optimal</em></strong> estimator in an LTI Gaussian system.
-	$$
-		\begin{aligned}
-			\hat x(k|k-1)&=A\hat x(k-1),\\
-			P(k|k-1)&=AP(k-1)A^T+Q,\\
-			K(k)&=P(k|K-1)C^T[CP(k|k-1)C^T+R]^{-1},\\
-			\hat x(k)&=\hat x(k|k-1)+K(k)[y(k)-C\hat x(k|k-1)],\\
-			P(k)&=[I-K(k)C]P(k|k-1),
-		\end{aligned}
-	$$
-	where $\hat x(0)=0$ and $P(0)=\Sigma$.
-	</p>
-</section>
-
-<section id="slide-kf" class="center">
-	<h2 id="h2_kf" hidden>DSE algorithm</h2>
-	<h4 id="h4_kf">STEADY-STATE KALMAN FILTER</h3>
-	<div class="leftcol" style="font-size:35px;">
+	    <div class="rightcol" style="margin-top: -3%;">
+	      <img src="./figures/raw/background/blkdiag_background.png" width="610" height="450">
+	      <p style="text-align:center;font-size:27px;">Diagram of the DSE algorithm with decoupling</p>
+	      <p style="font-size:27px;">
+	      <ul>
+		<li>Can we <strong><em style="color:var(--myred);">decouple</em></strong> the local filter from the consensus process?</li>
 		<ul>
-			<li> Since $(A,C)$ is observable, the Kalman filter will converge to the <strong><em style="color:var(--myred);">steady-state Kalman filter</em></strong>:
-				<p style="font-size:30px;">
-					$$
-					\begin{aligned}
-						\hat x(k+1)&=(A-KCA)\hat x(k)+K y(k+1)\\
-						&=(A-KCA)\hat x(k)+\sum_{i=1}^m K_i\ y_i(k+1),
-					\end{aligned}
-					$$
-				</p>
-			where $K=[K_1,\cdots, K_m]$.
-			</li>
-			<li> The steady-state Kalman filter can be viewed as a <strong><em style="color:var(--myred);">linear system with multiple inputs $y_i(k)$</em></strong>.
-			</li>
+		  <li>How to <strong><em style="color:var(--myred);">design local filters</em></strong> without information loss?</li>
+		  <li>How to <strong><em style="color:var(--myred);">leverage the consensus algorithm</em></strong>?</li>
 		</ul>
-	</div>
-	<div class="rightcol" style="margin-top: 8%;">
-		<img src="./figures/raw/kalman.png" width="500" height="300">
-		<div style="margin-top: 50%;margin-left:15%;">
+	      </ul>
+	      </p>
+	    </div>
+
+	  </section>
+
+	  <!--DSE algorithm:kf-->
+
+	  <section if="slide-original-kf" class="center">
+	    <h4 id="h4_kf">KALMAN FILTER</h4>
+	    <p style="font-size:35px;">
+	    Kalman filter is the <strong><em style="color:var(--myred);">optimal</em></strong> estimator in an LTI Gaussian system.
+	    $$
+	    \begin{aligned}
+	    \hat x(k|k-1)&=A\hat x(k-1),\\
+	    P(k|k-1)&=AP(k-1)A^T+Q,\\
+	    K(k)&=P(k|K-1)C^T[CP(k|k-1)C^T+R]^{-1},\\
+	    \hat x(k)&=\hat x(k|k-1)+K(k)[y(k)-C\hat x(k|k-1)],\\
+	    P(k)&=[I-K(k)C]P(k|k-1),
+	    \end{aligned}
+	    $$
+	    where $\hat x(0)=0$ and $P(0)=\Sigma$.
+	    </p>
+	  </section>
+
+	  <section id="slide-kf" class="center">
+	    <h2 id="h2_kf" hidden>DSE algorithm</h2>
+	    <h4 id="h4_kf">STEADY-STATE KALMAN FILTER</h3>
+	    <div class="leftcol" style="font-size:35px;">
+	      <ul>
+		<li> Since $(A,C)$ is observable, the Kalman filter will converge to the <strong><em style="color:var(--myred);">steady-state Kalman filter</em></strong>:
+		  <p style="font-size:30px;">
+		  $$
+		  \begin{aligned}
+		  \hat x(k+1)&=(A-KCA)\hat x(k)+K y(k+1)\\
+		  &=(A-KCA)\hat x(k)+\sum_{i=1}^m K_i\ y_i(k+1),
+		  \end{aligned}
+		  $$
+		  </p>
+		  where $K=[K_1,\cdots, K_m]$.
+		</li>
+		<li> The steady-state Kalman filter can be viewed as a <strong><em style="color:var(--myred);">linear system with multiple inputs $y_i(k)$</em></strong>.
+		</li>
+	      </ul>
+	    </div>
+	    <div class="rightcol" style="margin-top: 8%;">
+	      <img src="./figures/raw/kalman.png" width="500" height="300">
+	      <div style="margin-top: 50%;margin-left:15%;">
 		<p style="font-size:27px;text-align:center;">Diagram of steady-state Kalman filter</p>
+	      </div>
+	    </div>
+
+	    <div class="slide-footer"><br></div>
+	  </section>
+
+	  <section id="slide-decomposition-kf" class="center">
+	    <h3 id="h3_decomkf" hidden>Decomposition of Kalman filter</h4>
+	    <h4 id="h4_decomkf">DECOMPOSITION of KALMAN FILTER</h4>
+	    <div class="leftcol">
+	      <p style="font-size:28px;">
+	      <strong>Theorem 1</strong>: Assume that
+	      <ul style="font-size:30px;">
+		<li> $A-KCA$ has <strong><em style="color:var(--myred);">$n$ distinct</em></strong> eigenvalues;
+		  $$
+		  A-KCA=V\Lambda V^{-1}=V\text{diag}(\lambda_1,\cdots,\lambda_n)V^{-1}.
+		  $$
+		</li>
+		<li> $A-KCA$ and $A$ <strong><em style="color:var(--myred);">do not share</em></strong> any eigenvalues.
+		</li>
+	      </ul>
+	      </p>
+	      <p style="font-size:30px;">
+	      Then the optimal Kalman estimate can be recovered from the local estimates $\hat\zeta_i(k)$ as
+	      $$
+	      \begin{aligned}
+	      {\color{var(--myblue)}\hat \zeta_i(k+1)}&={\color{var(--myblue)}\Lambda\hat\zeta_i(k)+\textbf{1}_n\ y_i(k+1)},\\
+	      {\color{var(--myred)}\hat x(k)}&={\color{var(--myred)}\sum_{i=1}^m F_i\ \hat\zeta_i(k)},
+	      \end{aligned}
+	      $$
+	      where \(F_i=V\text{diag}(V^{-1}K_i)\).
+	      </p>
+	    </div>
+
+	    <div class="r-stack" style="margin-top: 15%;">
+	      <span class="fragment fade-out" data-fragment-index="1">
+		<img src="./figures/raw/local_no_color.png" width="500" height="350">
+		<div style="margin-top: 50%;margin-left:15%;" >
+		  <p style="font-size:27px;text-align:center;">Diagram of the decomposition of steady-state Kalman filter</p>
 		</div>
-	</div>
+	      </span>
 
-	<div class="slide-footer"><br></div>
-</section>
-
-<section id="slide-decomposition-kf" class="center">
-	<h3 id="h3_decomkf" hidden>Decomposition of Kalman filter</h4>
-	<h4 id="h4_decomkf">DECOMPOSITION of KALMAN FILTER</h4>
-	<div class="leftcol">
-	<p style="font-size:28px;">
-		<strong>Theorem 1</strong>: Assume that
-		<ul style="font-size:30px;">
-			<li> $A-KCA$ has <strong><em style="color:var(--myred);">$n$ distinct</em></strong> eigenvalues;
-				$$
-					A-KCA=V\Lambda V^{-1}=V\text{diag}(\lambda_1,\cdots,\lambda_n)V^{-1}.
-				$$
-			</li>
-			<li> $A-KCA$ and $A$ <strong><em style="color:var(--myred);">do not share</em></strong> any eigenvalues.
-			</li>
+	      <span style="font-size:30px;text-align:center" class="fragment fade-up" data-fragment-index="1">
+		<p style="text-align:left;"><strong><i>Remark.</i></strong></p>
+		<ul>
+		  <li><strong><em style="color:var(--myred);">$\hat\zeta_i(k)$ is a stable estimate of $G_ix(k)$</em></strong>, where 
+		    $$
+		    \begin{aligned}
+		    G_i&\triangleq \begin{bmatrix}
+		    C_iA(A-\lambda_1I)^{-1}\\
+		    \vdots\\
+		    C_iA(A-\lambda_nI)^{-1}
+		    \end{bmatrix}.
+		    \end{aligned}
+		    $$
+		  </li>
+		  <li>$G_i$ represents the <strong><em style="color:var(--myred);">observable space</em></strong> of sensor $i$.</li>
 		</ul>
-	</p>
-	<p style="font-size:30px;">
-	Then the optimal Kalman estimate can be recovered from the local estimates $\hat\xi_i(k)$ as
-	$$
-		\begin{aligned}
-			{\color{var(--myblue)}\hat \xi_i(k+1)}&={\color{var(--myblue)}\Lambda\hat\xi_i(k)+\textbf{1}_n\ y_i(k+1)},\\
-			{\color{var(--myred)}\hat x(k)}&={\color{var(--myred)}\sum_{i=1}^m F_i\ \hat\xi_i(k)},
-		\end{aligned}
-	$$
-	where \(F_i=V\text{diag}(V^{-1}K_i)\).
-	</p>
-	</div>
-	
-	<div class="r-stack" style="margin-top: 15%;">
-		<span class="fragment fade-out" data-fragment-index="1">
-			<img src="./figures/raw/local_no_color.png" width="500" height="350">
-			<div style="margin-top: 50%;margin-left:15%;" >
-				<p style="font-size:27px;text-align:center;">Diagram of the decomposition of steady-state Kalman filter</p>
-			</div>
-		</span>
+	      </span>
+	    </div>
 
-		<span style="font-size:30px;text-align:center" class="fragment fade-up" data-fragment-index="1">
-			<p style="text-align:left;"><strong><i>Remark.</i></strong></p>
-			<ul>
-				<li><strong><em style="color:var(--myred);">$\hat\xi_i(k)$ is a stable estimate of $G_ix(k)$</em></strong>, where 
-					$$
-						\begin{aligned}
-							G_i&\triangleq \begin{bmatrix}
-							C_iA(A-\lambda_1I)^{-1}\\
-							\vdots\\
-							C_iA(A-\lambda_nI)^{-1}
-							\end{bmatrix}.
-						\end{aligned}
-					$$
-				</li>
-				<li>$G_i$ represents the <strong><em style="color:var(--myred);">observable space</em></strong> of sensor $i$.</li>
-			</ul>
-		</span>
-	</div>
+	    <div class="slide-footer"><br></div>
+	  </section>
 
-	<div class="slide-footer"><br></div>
-</section>
+	  <section id="slide-prediction" class="center">
+	    <h3 id="h3_transformation" hidden>Prediction of $y_i(k+1)$</h3>
+	    <h4 id="h4_transformation">PREDICTION of $y_i(k+1)$</h4>
 
-<section id="slide-prediction" class="center">
-	<h3 id="h3_transformation" hidden>Prediction of $y_i(k+1)$</h3>
-	<h4 id="h4_transformation">PREDICTION of $y_i(k+1)$</h4>
-
-	<div class="leftcol" style="font-size:35px;">
-		<p>
-			<ul>
-				<li><strong><em style="color:var(--myblue);">Stable system matrix</em></strong> + <strong><em style="color:var(--myred);">unstable input</em></strong>: 
-					$$
-						\hat\xi_i(k+1)={\color{var(--myblue)}\Lambda}\hat\xi_i(k)+\textbf{1}_n{\color{var(--myred)}y_i(k+1)}.
-					$$
-				</li>
-			</ul>
-		</p>
-
-		<span class="r-stack"><img src="./figures/raw/arrow.png" width="70" height="140" class="fragment fade-in" data-fragment-index="2"></span>
-		<p>
-			<ul>
-				<li class="fragment fade-in" data-fragment-index="2"><strong><em style="color:var(--myred);">Unstable system matrix</em></strong> + <strong><em style="color:var(--myblue);">stable input</em></strong>:
-					$$
-						\hat\xi_i(k+1)={\color{var(--myred)}S}\hat\xi_i(k)+\textbf{1}_n{\color{var(--myblue)}z_i(k+1)},
-					$$
-					where $S\triangleq \Lambda+\textbf{1}_n\beta^T$.
-				</li>
-			</ul>
-		</p>
-	</div>
-
-	<div class="rightcol" style="font-size:30px;">
-		<span class="fragment fade-in" data-fragment-index="1">
-			<strong>Theorem 2</strong>: 
-			<ul style="font-size:35px;">
-				<li> There <strong><em style="color:var(--myred);">always exists $\beta$</em></strong>, which solves 
-					$$
-					\sum_{i=1}^n \beta_i(A-\lambda_iI)^{-1}=I.
-					$$
-				</li>
-				<li>The prediction residual ${\color{var(--myblue)}{z_i(k+1)}}\triangleq {\color{var(--myred)}{y_i(k+1)}}-\beta^T\hat\xi_i(k)$ is stable.</li>
-			</ul>
-
-			<p style="font-size:30px;">
-				<strong><i>Remark.</i></strong> 
-				$$
-					(A-\lambda_iI)^{-1}\in\text{span}\{A^0, A^1, \cdots, A^{n-1}\}.
-				$$
-			</p>
-		</span>
-	</div>
-</section>
-
-
-<!--Our algorithm:description-->
-<section id="slide-our-algorithm-intuitive" class="center">
-	<h2 id="h2_our-algorithm" hidden>DSE algorithm</h2>
-	<h3 id="h3_our-algorithm" hidden>DSE algorithm</h3>
-	<h4 id="ouralgorithm">DECOMPOSITION of KALMAN FILTER in MATRIX FORM</h4>
-	<div class="outline-text-2" id="text-ouralgorithm"></div>
-
-	<p style="font-size:35px;">
-		CKF fuses <strong><em style="color:var(--myred);">all local estimates $\hat\xi_i(k)$</em></strong> to obatin the optimal estimate.
-	</p>
-	<p style="font-size:30px;">
-	$$
-		\begin{aligned}
-			\begin{bmatrix}
-				\hat\xi_1(k+1)\\
-				\hat\xi_2(k+1)\\
-				\vdots\\
-				\hat\xi_m(k+1)
-			\end{bmatrix}&=
-			{\color{var(--myred)}\begin{bmatrix}
-				S & & & \\
-				 & S & & \\
-				 & & \ddots & \\
-				 & & & S
-			\end{bmatrix}}\begin{bmatrix}
-				\hat\xi_1(k)\\
-				\hat\xi_2(k)\\
-				\vdots\\
-				\hat\xi_m(k)
-			\end{bmatrix} +
-			{\color{var(--myblue)}\begin{bmatrix}
-				\textbf{1}_nz_1(k+1)\\
-				\textbf{1}_nz_2(k+1)\\
-				\vdots\\
-				\textbf{1}_nz_m(k+1)
-			\end{bmatrix}},\\
-			\hat x(k)&=F\begin{bmatrix}
-				\hat\xi_1(k)\\
-				\hat\xi_2(k)\\
-				\vdots\\
-				\hat\xi_m(k)
-			\end{bmatrix},
-		\end{aligned}
-	$$
-		where $F\triangleq[F_1\ F_2\ \cdots\ F_m]$.
-	</p>
-</section>
-
-<section id="slide-our-algorithm">
-	<h4 id="h4_distributed_implementation">DISTRIBUTED IMPLEMENTATION of KALMAN FILTER</h4>
-
-	<p style="font-size:35px;">
-		Let sensor $i$ <strong><em style="color:var(--myred);">infer $\frac{1}{m}\hat\xi_j(k)$</em></strong>, which is denoted by <strong><em style="color:var(--myred);">$\eta_{ij}(k)$</em></strong>.
-	</p>
-	<p style="font-size:30px;">
-	$$
-		\begin{aligned}
-			\begin{bmatrix}
-				\eta_{i1}(k+1)\\
-				\vdots\\
-				\eta_{ii}(k+1)\\
-				\vdots\\
-				\eta_{im}(k+1)
-			\end{bmatrix}&=
-			\begin{bmatrix}
-				S & & & \\
-				 & S & & \\
-				 & & \ddots & \\
-				 & & & S
-			\end{bmatrix}\begin{bmatrix}
-				\eta_{i1}(k)\\
-				\vdots\\
-				\eta_{ii}(k)\\
-				\vdots\\
-				\eta_{im}(k)
-			\end{bmatrix}+\begin{bmatrix}
-				0 \\
-				\vdots \\
-				\textbf{1}_n {\color{var(--myblue)}z_i(k+1)}\\
-				\vdots\\
-				0
-			\end{bmatrix} + {\color{var(--myred)}\tilde B u_i(k)},\\
-			\\
-			\breve x_i(k)&=mF\begin{bmatrix}
-				\eta_{i1}(k)\\
-				\vdots\\
-				\eta_{im}(k)
-			\end{bmatrix}.
-		\end{aligned}
-	$$
-	</p>
-	<p style="font-size:30px;">In matrix form, $\eta_i(k+1)=\tilde S\eta_i(k)+L_i{\color{var(--myblue)}{z_i(k+1)}}+{\color{var(--myred)}{\tilde B u_i(k)}}$.</p>
-</section>
-
-<section id="slide-synchronization">
-	<h4 id="sync">RECALL: LINEAR SYSTEM SYNCHRONIZATION</h4>
-	<ul style="font-size:34px;">
-		<li>
-			Consider the <strong><em style="color:var(--myred);">synchronization</em></strong> of the following <strong><em style="color:var(--myred);">noiseless LTI system</em></strong>:
-			$$
-				\eta_i(k+1)=\tilde S\eta_i(k)+{\color{var(--myred)}{\tilde B u_i(k)}}.
-			$$
+	    <div class="leftcol" style="font-size:35px;">
+	      <p>
+	      <ul>
+		<li><strong><em style="color:var(--myblue);">Stable system matrix</em></strong> + <strong><em style="color:var(--myred);">unstable input</em></strong>: 
+		  $$
+		  \hat\zeta_i(k+1)={\color{var(--myblue)}\Lambda}\hat\zeta_i(k)+\textbf{1}_n{\color{var(--myred)}y_i(k+1)}.
+		  $$
 		</li>
-		<li> <strong><em style="color:var(--myred);">Strong synchronization</em></strong>:
-			<ul style="font-size:33px;">
-				<li><strong><em style="color:var(--myred);">Consistency</em></strong>: the average of all local states follows that
-					$$
-						\sum_{i=1}^m \eta_i(k+1)=\tilde S\sum_{i=1}^m \eta_i(k).
-					$$
-				</li>
-				<li><strong><em style="color:var(--myred);">Exponential stability</em></strong>: agents exponentially reach consensus in the mean square sense, i.e., there exists $c>0$ and $\rho\in(0,1)$ such that
-					$$
-					\mathbb{E}[||\eta_i(k)-\bar \eta(k)||^2]\le c\rho^k, \forall i\in\{1,\cdots,m\}
-					$$
-				</li>
-			</ul>
-		</li>
-		<li>Fixed graph <a class="org-ref-reference" href="#slide-bibliography">[You2011, Gu2011]</a>; time-varying graphs <a class="org-ref-reference" href="#slide-bibliography">[Zhang2021]</a>; random link failures <a class="org-ref-reference" href="#slide-bibliography">[Xu2019]</a>...</li>
-	</ul>
-</section>
+	      </ul>
+	      </p>
 
-<section id="slide-analysis" class="center">
-	<h3 id="h3_algorithm-analysis" hidden>Algorithm analysis</h3>
-	<h4 id="kf">ALGORITHM ANALYSIS</h4>
-	<div class="outline-text-2" id="text-decomkf">
-	</div>
-	<p style="font-size:34px;">
-		<strong>Theorem 3</strong>: For the proposed DSE algorithm with any <strong><em style="color:var(--myred);">strong synchronization algorithm</em></strong>, 
-		<ul style="font-size:34px;">
-			<li> The <strong><em style="color:var(--myred);">average</em></strong> of fused estimates from all sensors <strong><em style="color:var(--myred);">coincide with the optimal Kalman estimate</em></strong> at any instant $k$. That is
-				<p style="font-size:30px;">
-					$$
-						\frac{1}{m}\sum_{i=1}^m \breve x_i(k)=\hat x(k), \forall k\ge 0.
-					$$
-				</p>
-			</li>
-			<li> The error covariance of each local estimate is <strong><em style="color:var(--myred);">bounded</em></strong> at any instant $k$ and can be <strong><em style="color:var(--myred);">exactly calculated</em></strong>.</li>
+	      <span class="r-stack"><img src="./figures/raw/arrow.png" width="70" height="140" class="fragment fade-in" data-fragment-index="2"></span>
+	      <p>
+	      <ul>
+		<li class="fragment fade-in" data-fragment-index="2"><strong><em style="color:var(--myred);">Unstable system matrix</em></strong> + <strong><em style="color:var(--myblue);">stable input</em></strong>:
+		  $$
+		  \hat\zeta_i(k+1)={\color{var(--myred)}S}\hat\zeta_i(k)+\textbf{1}_n{\color{var(--myblue)}z_i(k+1)},
+		  $$
+		  where $S\triangleq \Lambda+\textbf{1}_n\beta^T$.
+		</li>
+	      </ul>
+	      </p>
+	    </div>
+
+	    <div class="rightcol" style="font-size:30px;">
+	      <span class="fragment fade-in" data-fragment-index="1">
+		<strong>Theorem 2</strong>: 
+		<ul style="font-size:35px;">
+		  <li> There <strong><em style="color:var(--myred);">always exists $\beta$</em></strong>, which solves 
+		    $$
+		    \sum_{i=1}^n \beta_i(A-\lambda_iI)^{-1}=I.
+		    $$
+		  </li>
+		  <li>The prediction residual ${\color{var(--myblue)}{z_i(k+1)}}\triangleq {\color{var(--myred)}{y_i(k+1)}}-\beta^T\hat\zeta_i(k)$ is stable.</li>
 		</ul>
-	</p>
-	<p style="font-size:34px;">
+
+		<p style="font-size:30px;">
+		<strong><i>Remark.</i></strong> 
+		$$
+		(A-\lambda_iI)^{-1}\in\text{span}\{A^0, A^1, \cdots, A^{n-1}\}.
+		$$
+		</p>
+	      </span>
+	    </div>
+	  </section>
+
+
+	  <!--Our algorithm:description-->
+	  <section id="slide-our-algorithm-intuitive" class="center">
+	    <h2 id="h2_our-algorithm" hidden>DSE algorithm</h2>
+	    <h3 id="h3_our-algorithm" hidden>DSE algorithm</h3>
+	    <h4 id="ouralgorithm">DECOMPOSITION of KALMAN FILTER in MATRIX FORM</h4>
+	    <div class="outline-text-2" id="text-ouralgorithm"></div>
+
+	    <p style="font-size:35px;">
+	    CKF fuses <strong><em style="color:var(--myred);">all local estimates $\hat\zeta_i(k)$</em></strong> to obatin the optimal estimate.
+	    </p>
+	    <p style="font-size:30px;">
+	    $$
+	    \begin{aligned}
+	    \begin{bmatrix}
+	    \hat\zeta_1(k+1)\\
+	    \hat\zeta_2(k+1)\\
+	    \vdots\\
+	    \hat\zeta_m(k+1)
+	    \end{bmatrix}&=
+	    {\color{var(--myred)}\begin{bmatrix}
+	    S & & & \\
+	    & S & & \\
+	    & & \ddots & \\
+	    & & & S
+	    \end{bmatrix}}\begin{bmatrix}
+	    \hat\zeta_1(k)\\
+	    \hat\zeta_2(k)\\
+	    \vdots\\
+	    \hat\zeta_m(k)
+	    \end{bmatrix} +
+	    {\color{var(--myblue)}\begin{bmatrix}
+	    \textbf{1}_nz_1(k+1)\\
+	    \textbf{1}_nz_2(k+1)\\
+	    \vdots\\
+	    \textbf{1}_nz_m(k+1)
+	    \end{bmatrix}},\\
+	    \hat x(k)&=F\begin{bmatrix}
+	    \hat\zeta_1(k)\\
+	    \hat\zeta_2(k)\\
+	    \vdots\\
+	    \hat\zeta_m(k)
+	    \end{bmatrix},
+	    \end{aligned}
+	    $$
+	    where $F\triangleq[F_1\ F_2\ \cdots\ F_m]$.
+	    </p>
+	  </section>
+
+	  <section id="slide-our-algorithm">
+	    <h4 id="h4_distributed_implementation">DISTRIBUTED IMPLEMENTATION of KALMAN FILTER</h4>
+
+	    <p style="font-size:35px;">
+	    Let sensor $i$ <strong><em style="color:var(--myred);">infer $\frac{1}{m}\hat\zeta_j(k)$</em></strong>, which is denoted by <strong><em style="color:var(--myred);">$\eta_{ij}(k)$</em></strong>.
+	    </p>
+	    <p style="font-size:30px;">
+	    $$
+	    \begin{aligned}
+	    \begin{bmatrix}
+	    \eta_{i1}(k+1)\\
+	    \vdots\\
+	    \eta_{ii}(k+1)\\
+	    \vdots\\
+	    \eta_{im}(k+1)
+	    \end{bmatrix}&=
+	    \begin{bmatrix}
+	    S & & & \\
+	    & S & & \\
+	    & & \ddots & \\
+	    & & & S
+	    \end{bmatrix}\begin{bmatrix}
+	    \eta_{i1}(k)\\
+	    \vdots\\
+	    \eta_{ii}(k)\\
+	    \vdots\\
+	    \eta_{im}(k)
+	    \end{bmatrix}+\begin{bmatrix}
+	    0 \\
+	    \vdots \\
+	    \textbf{1}_n {\color{var(--myblue)}z_i(k+1)}\\
+	    \vdots\\
+	    0
+	    \end{bmatrix} + {\color{var(--myred)}\tilde B u_i(k)},\\
+	    \\
+	    \breve x_i(k)&=mF\begin{bmatrix}
+	    \eta_{i1}(k)\\
+	    \vdots\\
+	    \eta_{im}(k)
+	    \end{bmatrix}.
+	    \end{aligned}
+	    $$
+	    </p>
+	    <p style="font-size:30px;">In matrix form, $\eta_i(k+1)=\tilde S\eta_i(k)+L_i{\color{var(--myblue)}{z_i(k+1)}}+{\color{var(--myred)}{\tilde B u_i(k)}}$.</p>
+	  </section>
+
+	  <section id="slide-synchronization">
+	    <h4 id="sync">RECALL: LINEAR SYSTEM SYNCHRONIZATION</h4>
+	    <ul style="font-size:34px;">
+	      <li>
+		Consider the <strong><em style="color:var(--myred);">synchronization</em></strong> of the following <strong><em style="color:var(--myred);">noiseless LTI system</em></strong>:
+		$$
+		\eta_i(k+1)=\tilde S\eta_i(k)+{\color{var(--myred)}{\tilde B u_i(k)}}.
+		$$
+	      </li>
+	      <li> <strong><em style="color:var(--myred);">Strong synchronization</em></strong>:
+		<ul style="font-size:33px;">
+		  <li><strong><em style="color:var(--myred);">Consistency</em></strong>: the average of all local states follows that
+		    $$
+		    \sum_{i=1}^m \eta_i(k+1)=\tilde S\sum_{i=1}^m \eta_i(k).
+		    $$
+		  </li>
+		  <li><strong><em style="color:var(--myred);">Exponential stability</em></strong>: agents exponentially reach consensus in the mean square sense, i.e., there exists $c>0$ and $\rho\in(0,1)$ such that
+		    $$
+		    \mathbb{E}[||\eta_i(k)-\bar \eta(k)||^2]\le c\rho^k, \forall i\in\{1,\cdots,m\}
+		    $$
+		  </li>
+		</ul>
+	      </li>
+	      <li>Fixed graph <a class="org-ref-reference" href="#slide-bibliography">[You2011, Gu2011]</a>; time-varying graphs <a class="org-ref-reference" href="#slide-bibliography">[Zhang2021]</a>; random link failures <a class="org-ref-reference" href="#slide-bibliography">[Xu2019]</a>...</li>
+	    </ul>
+	  </section>
+
+	  <section id="slide-analysis" class="center">
+	    <h3 id="h3_algorithm-analysis" hidden>Algorithm analysis</h3>
+	    <h4 id="kf">ALGORITHM ANALYSIS</h4>
+	    <div class="outline-text-2" id="text-decomkf">
+	    </div>
+	    <p style="font-size:34px;">
+	    <strong>Theorem 3</strong>: For the proposed DSE algorithm with any <strong><em style="color:var(--myred);">strong synchronization algorithm</em></strong>, 
+	    <ul style="font-size:34px;">
+	      <li> The <strong><em style="color:var(--myred);">average</em></strong> of fused estimates from all sensors <strong><em style="color:var(--myred);">coincide with the optimal Kalman estimate</em></strong> at any instant $k$. That is
 		<p style="font-size:30px;">
 		$$
-			\begin{aligned}
-				\text{Cov}(\breve e_i(k))&=\text{Cov}(\breve x_i(k)-x(k))\\
-				&=\text{Cov}({\color{var(--myred)}\breve x_i(k)-\hat x(k)}+{\color{var(--myblue)}\hat x(k)-x(k)})\\
-				&=\text{Cov}({\color{var(--myred)}\breve x_i(k)-\frac{1}{m}\sum_{i=1}^m \breve x_i(k)})+\text{Cov}({\color{var(--myblue)}\hat x(k)-x(k)})\\
-				&=\text{Cov}({\color{var(--myred)}\text{Consensus error}}) + \text{Cov}({\color{var(--myblue)}\text{Kalman filter error}}).
-			\end{aligned}
+		\frac{1}{m}\sum_{i=1}^m \breve x_i(k)=\hat x(k), \forall k\ge 0.
 		$$
 		</p>
-		<p style="font-size:34px;">
-		The asymptotic covariance of consensus error is the <strong><em style="color:var(--myred);">fixed point of a Lyapunov equation</em></strong>.
-		</p>
-	</p>
+	      </li>
+	      <li> The error covariance of each local estimate is <strong><em style="color:var(--myred);">bounded</em></strong> at any instant $k$ and can be <strong><em style="color:var(--myred);">exactly calculated</em></strong>.</li>
+	    </ul>
+	    </p>
+	    <p style="font-size:34px;">
+	    <p style="font-size:30px;">
+	    $$
+	    \begin{aligned}
+	    \text{Cov}(\breve e_i(k))&=\text{Cov}(\breve x_i(k)-x(k))\\
+	    &=\text{Cov}({\color{var(--myred)}\breve x_i(k)-\hat x(k)}+{\color{var(--myblue)}\hat x(k)-x(k)})\\
+	    &=\text{Cov}({\color{var(--myred)}\breve x_i(k)-\frac{1}{m}\sum_{i=1}^m \breve x_i(k)})+\text{Cov}({\color{var(--myblue)}\hat x(k)-x(k)})\\
+	    &=\text{Cov}({\color{var(--myred)}\text{Consensus error}}) + \text{Cov}({\color{var(--myblue)}\text{Kalman filter error}}).
+	    \end{aligned}
+	    $$
+	    </p>
+	    <p style="font-size:34px;">
+	    The asymptotic covariance of consensus error is the <strong><em style="color:var(--myred);">fixed point of a Lyapunov equation</em></strong>.
+	    </p>
+	    </p>
 
-	<div class="slide-footer"><br></div>
-</section>
+	    <div class="slide-footer"><br></div>
+	  </section>
 
-<section id="slide-You2011" class="center">
-	<h4 id="consensus">EXAMPLE: LINEAR SYSTEM SYNCHRONIZATION</h4>
-	<div style="font-size:35px;">
-		<strong>Theorem</strong><a class="org-ref-reference" href="#slide-bibliography">[You2011]</a>: <strong><em style="color:var(--myred);">There exists $\tilde\Gamma$</em></strong> such that the consensus protocol <strong><em style="color:var(--myred);">$u_i(k)=\sum_{j\in N(i)}a_{ij}\tilde\Gamma(x_j(k)-x_i(k))$</em></strong> enforces consensus if
-		<ul>
-			<li>$(\tilde S, \tilde B)$ is controllable;</li>
-			<li>
-				$$
-					{\color{var(--myred)}\prod_j|\lambda_j^u(A)|}<{\color{var(--myblue)}\frac{1+\mu_2/\mu_m}{1-\mu_2/\mu_m}},
-				$$
-				where $\lambda_j^u(A)$ represents an unstable eigenvalue of $A$; $\mu_2$ and $\mu_m$ are respectively the second smallest and largest eigenvalues of the laplacian matrix $\mathcal{L}_{\mathcal{G}}$.
-			</li>
-		</ul>
-		<strong>Remark</strong>: <strong><em style="color:var(--myred);">$\tilde\Gamma$</em></strong> can be found by solving a <strong><em style="color:var(--myred);">modified algebraic Riccati inequality</em></strong>.
-	</div>
-</section>
+	  <section id="slide-You2011" class="center">
+	    <h4 id="consensus">EXAMPLE: LINEAR SYSTEM SYNCHRONIZATION</h4>
+	    <div style="font-size:35px;">
+	      <strong>Theorem</strong><a class="org-ref-reference" href="#slide-bibliography">[You2011]</a>: <strong><em style="color:var(--myred);">There exists $\tilde\Gamma$</em></strong> such that the consensus protocol <strong><em style="color:var(--myred);">$u_i(k)=\sum_{j\in N(i)}a_{ij}\tilde\Gamma(x_j(k)-x_i(k))$</em></strong> enforces consensus if
+	      <ul>
+		<li>$(\tilde S, \tilde B)$ is controllable;</li>
+		<li>
+		  $$
+		  {\color{var(--myred)}\prod_j|\lambda_j^u(A)|}<{\color{var(--myblue)}\frac{1+\mu_2/\mu_m}{1-\mu_2/\mu_m}},
+					 $$
+					 where $\lambda_j^u(A)$ represents an unstable eigenvalue of $A$; $\mu_2$ and $\mu_m$ are respectively the second smallest and largest eigenvalues of the laplacian matrix $\mathcal{L}_{\mathcal{G}}$.
+		</li>
+	      </ul>
+	      <strong>Remark</strong>: <strong><em style="color:var(--myred);">$\tilde\Gamma$</em></strong> can be found by solving a <strong><em style="color:var(--myred);">modified algebraic Riccati inequality</em></strong>.
+	    </div>
+	  </section>
 
-<section id="slide-algorithm-description">
-	<h4 id="kf">DISTRIBUTED IMPLEMENTATION of STEADY-STATE KF</h4>
-	<div class="leftcol" style="font-size:30px;">
-	<ul>
+	  <section id="slide-algorithm-description">
+	    <h4 id="kf">DISTRIBUTED IMPLEMENTATION of STEADY-STATE KF</h4>
+	    <div class="leftcol" style="font-size:30px;">
+	      <ul>
 		<li class="fragment fade-in" data-fragment-index="1">Using the latest measuremnt, sensor $i$ <strong><em style="color:var(--myred);">computes the local residual and updates the local estimate</em></strong> by
-			<p style="font-size:27px;">
-				$$
-					\begin{aligned}
-						z_i(k+1)&=y_i(k+1)-\beta^T\hat\xi_i(k)\\
-						\hat\xi_i(k+1)&=S\hat\xi_i(k)+\textbf{1}_n z_i(k+1).
-					\end{aligned}
-				$$
-			</p>
+		  <p style="font-size:27px;">
+		  $$
+		  \begin{aligned}
+		  z_i(k+1)&=y_i(k+1)-\beta^T\hat\zeta_i(k)\\
+		  \hat\zeta_i(k+1)&=S\hat\zeta_i(k)+\textbf{1}_n z_i(k+1).
+		  \end{aligned}
+		  $$
+		  </p>
 		</li>
 		<li class="fragment fade-in" data-fragment-index="2"><strong><em style="color:var(--myred);">Transmit</em></strong> the message $\Delta_i(k)=(I_m\otimes\Gamma)\eta_i(k)$ to neighbors and <strong><em style="color:var(--myred);">collect</em></strong> messages $\Delta_j(k)$ from neighbors and apply the <strong><em style="color:var(--myred);">consensus algorithm</em></strong>
-			<p style="font-size:27px;">
-			$$
-				\begin{aligned}
-				\eta_i(k+1)&=(I_m\otimes S)\eta_i(k)+(e_i\otimes \textbf{1}_n)z_i(k+1)\\
-				&+{\color{var(--myblue)}\tilde B\sum_{j\in N(i)}a_{ij}(\Delta_j(k)-\Delta_i(k))}.
-				\end{aligned}
-			$$
-			</p>
+		  <p style="font-size:27px;">
+		  $$
+		  \begin{aligned}
+		  \eta_i(k+1)&=(I_m\otimes S)\eta_i(k)+(e_i\otimes \textbf{1}_n)z_i(k+1)\\
+		  &+{\color{var(--myblue)}\tilde B\sum_{j\in N(i)}a_{ij}(\Delta_j(k)-\Delta_i(k))}.
+		  \end{aligned}
+		  $$
+		  </p>
 		</li>
 		<li class="fragment fade-in" data-fragment-index="3">Update the fused estimate
-			<p style="font-size:27px;">
-			$$
-			\breve x_i(k+1)=mF\eta_i(k+1).
-			$$
-			</p>
+		  <p style="font-size:27px;">
+		  $$
+		  \breve x_i(k+1)=mF\eta_i(k+1).
+		  $$
+		  </p>
 		</li>
-	</ul>
-	</div>
+	      </ul>
+	    </div>
 
-	<div class="r-stack">
-		<span class="fragment fade-in" data-fragment-index="1">
-			<img src="./figures/raw/blkdiag1.png" width="610" height="450">
-			<div style="margin-top: 50%;margin-left:15%;">
-				<p style="font-size:27px; text-align:center; position:absolute; margin-top: -2%; margin-left: 10%;">Diagram of local filters</p>
-			</div>
-		</span>
+	    <div class="r-stack">
+	      <span class="fragment fade-in" data-fragment-index="1">
+		<img src="./figures/raw/blkdiag1.png" width="610" height="450">
+		<div style="margin-top: 50%;margin-left:15%;">
+		  <p style="font-size:27px; text-align:center; position:absolute; margin-top: -2%; margin-left: 10%;">Diagram of local filters</p>
+		</div>
+	      </span>
 
-		<span  class="fragment fade-in" data-fragment-index="2">
-			<img src="./figures/raw/blkdiag.png" width="610" height="450">
-			<div style="margin-top: 50%;margin-left:15%;">
-				<p style="font-size:27px; text-align:center; position:absolute;margin-top: 10%;">Diagram of the distributed implementation of steady-state Kalman filter</p>
-			</div>
-		</span>
-	</div>
-</section>
+	      <span  class="fragment fade-in" data-fragment-index="2">
+		<img src="./figures/raw/blkdiag.png" width="610" height="450">
+		<div style="margin-top: 50%;margin-left:15%;">
+		  <p style="font-size:27px; text-align:center; position:absolute;margin-top: 10%;">Diagram of the distributed implementation of steady-state Kalman filter</p>
+		</div>
+	      </span>
+	    </div>
+	  </section>
 
-<section id="slide-algorithm-comparison">
-	<h4 id="kf">DECOUPLING</h4>
+	  <section id="slide-algorithm-comparison">
+	    <h4 id="kf">DECOUPLING</h4>
 
-	<div class="r-stack">
-		<div style="margin-left: 0%;">
+	    <div class="r-stack">
+	      <div style="margin-left: 0%;">
 		<img src="./figures/raw/kalman.png" width="400" height="240">
-		</div>
+	      </div>
 
-		<div style="margin-left: 31%;">
+	      <div style="margin-left: 31%;">
 		<img src="./figures/raw/local_no_color.png" width="400" height="280">
-		</div>
+	      </div>
 
-		<div style="margin-left: 60%;">
+	      <div style="margin-left: 60%;">
 		<img src="./figures/raw/blkdiag.png" width="500" height="369">
-		</div>
-	</div>
+	      </div>
+	    </div>
 
-	<p>
-		With a <strong><em style="color:var(--myred);">lossless decomposition</em></strong> of steady-state Kalman filter, we
-		<ul>
-			<li> <strong><em style="color:var(--myred);">decouple the local filter from the consensus process</em></strong>.</li>
-			<li> bridge the gap between <strong><em style="color:var(--myred);">DSE</em></strong> and <strong><em style="color:var(--myred);">linear system synchronization</em></strong>.</li>
-		</ul>
-	</p>
-	
-</section>
+	    <p>
+	    With a <strong><em style="color:var(--myred);">lossless decomposition</em></strong> of steady-state Kalman filter, we
+	    <ul>
+	      <li> <strong><em style="color:var(--myred);">decouple the local filter from the consensus process</em></strong>.</li>
+	      <li> bridge the gap between <strong><em style="color:var(--myred);">DSE</em></strong> and <strong><em style="color:var(--myred);">linear system synchronization</em></strong>.</li>
+	    </ul>
+	    </p>
 
-<section id="slide-model-reduction-intuitive" class="center">
-	<h3 id="h3_model-reduction" hidden>Model reduction</h3>
-	<h4 id="kf">MODEL REDUCTION</h4>
-	<p style="font-size:35px;">Can the <strong><em style="color:var(--myred);">message complexity $O(m)$</em></strong> be further reduced?</p>
-	<p style="font-size:26px;">
-		$$
-			\begin{aligned}
-				\begin{bmatrix}
-					\hat\xi_1(k+1)\\
-					\hat\xi_2(k+1)\\
-					\vdots\\
-					\hat\xi_m(k+1)
-				\end{bmatrix}&=
-				\begin{bmatrix}
-					S & & & \\
-					 & S & & \\
-					 & & \ddots & \\
-					 & & & S
-				\end{bmatrix}\begin{bmatrix}
-					\hat\xi_1(k)\\
-					\hat\xi_2(k)\\
-					\vdots\\
-					\hat\xi_m(k)
-				\end{bmatrix}+\begin{bmatrix}
-					\textbf{1}_n & & & \\
-					& \textbf{1}_n & & \\
-					& & \ddots & \\
-					& & & \textbf{1}_n
-				\end{bmatrix}
-				\begin{bmatrix}
-					{\color{var(--myblue)}z_1(k+1)}\\
-					{\color{var(--myblue)}z_2(k+1)}\\
-					{\color{var(--myblue)}\vdots}\\
-					{\color{var(--myblue)}z_m(k+1)}
-				\end{bmatrix},\\
-				{\color{var(--myred)}\hat x(k)}&=F\begin{bmatrix}
-					\hat\xi_1(k)\\
-					\hat\xi_2(k)\\
-					\vdots\\
-					\hat\xi_m(k)
-				\end{bmatrix}.
-			\end{aligned}
-		$$
-	</p>
-	<p>
-		<ul style="font-size:35px;">
-			<li><strong><em style="color:var(--myred);">$\hat x(k)$</em></strong> is what we want. </li>
-			<li>We can perform a <strong><em style="color:var(--myred);">model reduction</em></strong>.</li>
-		</ul>
-	</p>
-</section>
+	  </section>
 
-<section id="slide-model-reduction" class="center">
-	<h4 id="kf">MODEL REDUCTION</h4>
-	
-	<div class="leftcol">
-	<p style="font-size:30px;">
-		<strong>Theorem 4</strong>: Given <strong><em style="color:var(--myred);">any vector $w\in\mathbb{R}^n$</em></strong>. Suppose <strong><em style="color:var(--myred);">$(S^T, v)$ is controllable</em></strong>, then there exists a polynomial of $S$, namely $p(S)$, such that <strong><em style="color:var(--myred);">$w$ can be decomposed</em></strong> as
-		$$
-			w^T=v^Tp(S).
-		$$
-	</p>
-	<p style="font-size:30px;" class="fragment fade-in" data-fragment-index="1">
-		<strong>Theorem 5</strong>: <strong><em style="color:var(--myred);">Any matrix $W\in\mathbb{R}^{n\times n}$ can be decomposed</em></strong> as
-		$$
-			W=H_1p_1(S)+H_2p_2(S)+\cdots+H_np_n(S),
-		$$
-		where $H_i\triangleq e_i\beta^T$ and $p_i(S),i=1,2,\cdots,n$ are polynomials of $S$.
-	</p>
-	</div>
+	  <section id="slide-model-reduction-intuitive" class="center">
+	    <h3 id="h3_model-reduction" hidden>Model reduction</h3>
+	    <h4 id="kf">MODEL REDUCTION</h4>
+	    <p style="font-size:35px;">Can the <strong><em style="color:var(--myred);">message complexity $O(m)$</em></strong> be further reduced?</p>
+	    <p style="font-size:26px;">
+	    $$
+	    \begin{aligned}
+	    \begin{bmatrix}
+	    \hat\zeta_1(k+1)\\
+	    \hat\zeta_2(k+1)\\
+	    \vdots\\
+	    \hat\zeta_m(k+1)
+	    \end{bmatrix}&=
+	    \begin{bmatrix}
+	    S & & & \\
+	    & S & & \\
+	    & & \ddots & \\
+	    & & & S
+	    \end{bmatrix}\begin{bmatrix}
+	    \hat\zeta_1(k)\\
+	    \hat\zeta_2(k)\\
+	    \vdots\\
+	    \hat\zeta_m(k)
+	    \end{bmatrix}+\begin{bmatrix}
+	    \textbf{1}_n & & & \\
+	    & \textbf{1}_n & & \\
+	    & & \ddots & \\
+	    & & & \textbf{1}_n
+	    \end{bmatrix}
+	    \begin{bmatrix}
+	    {\color{var(--myblue)}z_1(k+1)}\\
+	    {\color{var(--myblue)}z_2(k+1)}\\
+	    {\color{var(--myblue)}\vdots}\\
+	    {\color{var(--myblue)}z_m(k+1)}
+	    \end{bmatrix},\\
+	    {\color{var(--myred)}\hat x(k)}&=F\begin{bmatrix}
+	    \hat\zeta_1(k)\\
+	    \hat\zeta_2(k)\\
+	    \vdots\\
+	    \hat\zeta_m(k)
+	    \end{bmatrix}.
+	    \end{aligned}
+	    $$
+	    </p>
+	    <p>
+	    <ul style="font-size:35px;">
+	      <li><strong><em style="color:var(--myred);">$\hat x(k)$</em></strong> is what we want. </li>
+	      <li>We can perform a <strong><em style="color:var(--myred);">model reduction</em> to reduce the complexity to \(min(m,n)\)</strong>.</li>
+	    </ul>
+	    </p>
+	  </section>
 
-	<div class="rightcol">
-		<p style="font-size:26px;">
-			<strong><i>Proof.</i></strong> Suppose $p(S)=\alpha_0I+\alpha_1S+\cdots+\alpha_{n-1}S^{n-1}$, thus we have
-			$$
-				w={\color{var(--myred)}\begin{bmatrix}
-					v & S^Tv & \cdots & (S^{n-1})^Tv
-				\end{bmatrix}}\begin{bmatrix}
-					\alpha_0\\
-					\alpha_1\\
-					\vdots\\
-					\alpha_{n-1}
-				\end{bmatrix}.
-			$$
-		</p>
-		<p style="font-size:26px;" class="fragment fade-in" data-fragment-index="1"  style="text-align:left;">
-			<strong><i>Proof.</i></strong>$$
-			W=\begin{bmatrix}
-				w_1^T\\
-				w_2^T\\
-				\vdots\\
-				w_n^T
-			\end{bmatrix}=e_1w_1^T+e_2w_2^T+\cdots+e_nw_n^T.
-			$$
-		</p>
-	</div>
-	
-</section>
+	  <section id="slide-conclusion-table" class="center">
+	    <h3 id="h3_conclusion-table" hidden>Conclusion</h3>
+	    <h4 id="conclusion">CONCLUSION</h4>
+	    <table style="font-size:35px;">
+	      <thead>
+		<tr>
+		  <th>Algorithm</th>
+		  <th>Consensus on</th>
+		  <th>Message complexity</th>
+		  <th>Stability</th>
+		  <th>Analytical form of variance</th>
+		  <th>Global optimality</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a></td>
+		  <td>Estimate</td>
+		  <td>$O(n)$</td>
+		  <td>Yes (if $\gamma$ is small enough)</td>
+		  <td>None</td>
+		  <td>No</td>
+		</tr>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Li2018]</a></td>
+		  <td>Measurement</td>
+		  <td>$O(n^2)$</td>
+		  <td>Yes (with enough steps of consensus)</td>
+		  <td>None</td>
+		  <td>Yes (if $A$ is stable and perform infinite steps of consensus)</td>
+		</tr>
+		<tr>
+		  <td><a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a></td>
+		  <td>PDF</td>
+		  <td>$O(n^2)$</td>
+		  <td>Yes (if $A$ is invertible)</td>
+		  <td>None</td>
+		  <td>No</td>
+		</tr>
+		<tr>
+		  <td><strong><em style="color:var(--myred);">Ours</em></strong></td>
+		  <td><strong><em style="color:var(--myred);">Estimate</em></strong></td>
+		  <td><strong><em style="color:var(--myred);">$O(\min(m, n))$</em></strong></td>
+		  <td><strong><em style="color:var(--myred);">Yes (with strong synchronization algorithms)</em></strong></td>
+		  <td><strong><em style="color:var(--myred);">Yes</em></strong></td>
+		  <td><strong><em style="color:var(--myred);">Yes(with infinite iterations or finite-time consensus)</em></strong></td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </section>
 
-<section id="slide-model-reduction-application" class="center">
-	<h4 id="h4_model-reduction">MODEL REDUCTION</h4>
-	<p style="font-size:35px;">The message complexity can be reduced to <strong><em style="color:var(--myred);">$O(\min(m, n))$</em></strong>.</p>
-	<div class="leftcol" style="font-size:23px;">
-		<p style="font-size:32px;"><strong>Theorem 4</strong>: The output of the following system $\tilde x(k)$ equals the Kalman estimate $\hat x(k)$:</p>
-		$$
-			\begin{aligned}
-				\begin{bmatrix}
-					\theta_1(k+1)\\
-					\vdots\\
-					\theta_n(k+1)
-				\end{bmatrix}&=(I_n\otimes S)\begin{bmatrix}
-					\theta_1(k)\\
-					\vdots\\
-					\theta_n(k)
-				\end{bmatrix}+T\begin{bmatrix}
-					z_1(k+1)\\
-					\vdots\\
-					z_m(k+1)
-				\end{bmatrix},\\
-				\tilde x(k)&=H\begin{bmatrix}
-					\theta_1(k)\\
-					\vdots\\
-					\theta_n(k)
-				\end{bmatrix},
-			\end{aligned}
-		$$
-		where $$
-			\begin{aligned}
-				T&=\begin{bmatrix}
-					T_1, T_2, \cdots, T_m
-				\end{bmatrix}, H=\begin{bmatrix}
-					H_1, H_2, \cdots, H_n
-				\end{bmatrix}
-			\end{aligned}
-		$$
-		and $H_i$ and $T_i$ follows
-		$$
-			\begin{aligned}
-				F_i&=\sum_{j=1}^n H_jp_{ij}(S),\\
-				T_i&\triangleq \begin{bmatrix}
-					(p_{i1}(S)\textbf{1}_n)^T, \cdots, (p_{in}(S)\textbf{1}_n)^T
-				\end{bmatrix}.
-			\end{aligned}
-		$$
-	</div>
-	<div class="rightcol" style="font-size:23px;margin-top: 2%;">
-		<strong><i>Proof.</i></strong>
-		$$
-			\begin{aligned}
-				\hat x(k+1)&=\sum_{t=0}^k F(I_m\otimes S)(I_m\otimes \textbf{1}_n)z(k-t+1)\\
-				&= \sum_{t=0}^{k} \Big(\sum_{i=1}^{m}F_iS^t\textbf{1}_n)z_i(k-t+1) \\
-				&= \sum_{t=0}^{k} \Big({\color{var(--myred)}\sum_{i=1}^{m}\sum_{j=1}^n H_j S^t p_{ij}(S)\textbf{1}_n}\Big)z_i(k-t+1) \\
-				&= \sum_{t=0}^{k} \Big({\color{var(--myblue)}\sum_{j=1}^n H_j S^t} \big[{\color{var(--myblue)}\sum_{i=1}^{m} p_{ij}(S)\textbf{1}_n} z_i(k-t+1)\big]\Big)\\
-				&=\sum_{t=0}^{k} H(I_n\otimes S)^t T z(k-t+1)\\
-				&=\tilde{x}(k+1).
-			\end{aligned}
-		$$
-	</div>
-</section>
+	  <!--Simulation and experiment-->
+	  <section id="slide-simulation" class="center">
+	    <h2 id="h2_simulation-experiment" hidden>Simulation and experiment</h2>
+	    <h4 id="simulation">SIMULATION: INVERTED PENDULUM</h4>
+	    <div>
+	      <img src="./figures/raw/simulation/IP.png" width="640" height="480">
+	    </div>
+	    <div class="r-stack">
+	      <ul style="font-size:35px;">
+		<li>State$=[x;\ \dot x;\ \theta,\ \dot\theta]$,
+		  <p style="font-size:30px;">
+		  $$
+		  \begin{aligned}
+		  y_1,y_2,y_3&=x+\text{noise},\\
+		  y_4&=\theta+\text{noise}.
+		  \end{aligned}
+		  $$
+		  </p>
 
-<section id="slide-conclusion-table" class="center">
-	<h3 id="h3_conclusion-table" hidden>Conclusion</h3>
-	<h4 id="conclusion">CONCLUSION</h4>
-	<table style="font-size:35px;">
-		<thead>
-			<tr>
-				<th>Algorithm</th>
-				<th>Consensus on</th>
-				<th>Message complexity</th>
-				<th>Stability</th>
-				<th>Analytical form of variance</th>
-				<th>Global optimality</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Olfati-Saber2009]</a></td>
-				<td>Estimate</td>
-				<td>$O(n)$</td>
-				<td>Yes (if $\gamma$ is small enough)</td>
-				<td>None</td>
-				<td>No</td>
-			</tr>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Li2018]</a></td>
-				<td>Measurement</td>
-				<td>$O(n^2)$</td>
-				<td>Yes (with enough steps of consensus)</td>
-				<td>None</td>
-				<td>Yes (if $A$ is stable and perform infinite steps of consensus)</td>
-			</tr>
-			<tr>
-				<td><a class="org-ref-reference" href="#slide-bibliography">[Battistelli2014]</a></td>
-				<td>PDF</td>
-				<td>$O(n^2)$</td>
-				<td>Yes (if $A$ is invertible)</td>
-				<td>None</td>
-				<td>No</td>
-			</tr>
-			<tr>
-				<td><strong><em style="color:var(--myred);">Ours</em></strong></td>
-				<td><strong><em style="color:var(--myred);">Estimate</em></strong></td>
-				<td><strong><em style="color:var(--myred);">$O(\min(m, n))$</em></strong></td>
-				<td><strong><em style="color:var(--myred);">Yes (with strong synchronization algorithms)</em></strong></td>
-				<td><strong><em style="color:var(--myred);">Yes</em></strong></td>
-				<td><strong><em style="color:var(--myred);">Yes(with infinite iterations or finite-time consensus)</em></strong></td>
-			</tr>
-		</tbody>
-	</table>
-</section>
+		</li>
+		<li> We use a <strong><em style="color:var(--myred);">LQR controller</em></strong> with the <strong><em style="color:var(--myred);">state estimate of sensor 4</em></strong> to stabilize the inverted pendulum.</li>
+		<li> The communication topology is a <strong><em style="color:var(--myred);">ring</em></strong>.</li>
+	      </ul>
+	    </div>
+	  </section>
 
-<!--Simulation and experiment-->
-<section id="slide-simulation" class="center">
-	<h2 id="h2_simulation-experiment" hidden>Simulation and experiment</h2>
-	<h4 id="simulation">SIMULATION: INVERTED PENDULUM</h4>
-	<div>
-		<img src="./figures/raw/simulation/IP.png" width="640" height="480">
-	</div>
-	<div class="r-stack">
-		<ul style="font-size:35px;">
-			<li>State$=[x;\ \dot x;\ \theta,\ \dot\theta]$,
-				<p style="font-size:30px;">
-				$$
-				\begin{aligned}
-					y_1,y_2,y_3&=x+\text{noise},\\
-					y_4&=\theta+\text{noise}.
-				\end{aligned}
-				$$
-				</p>
-				
-			</li>
-			<li> We use a <strong><em style="color:var(--myred);">LQR controller</em></strong> with the <strong><em style="color:var(--myred);">state estimate of sensor 4</em></strong> to stabilize the inverted pendulum.</li>
-			<li> The communication topology is a <strong><em style="color:var(--myred);">ring</em></strong>.</li>
-		</ul>
-	</div>
-</section>
+	  <section class="stretch" data-background-video="./videos/invertedPendulum.mp4" data-background-size="contain" data-background-video-loop="true">
+	  </section>
 
-<section class="stretch" data-background-video="./videos/invertedPendulum.mp4" data-background-size="contain" data-background-video-loop="true">
-</section>
+	  <section id="slide-simulation-variance" class="center">
+	    <h4 id="simulation">SIMULATION: MSE of ESTIMATES</h4>
+	    <img src="./figures/raw/simulation/variance2.png" width="680" height="510">
+	    <img src="./figures/raw/simulation/variance1.png" width="640" height="480">
+	  </section>
 
-<section id="slide-simulation-variance" class="center">
-	<h4 id="simulation">SIMULATION: MSE of ESTIMATES</h4>
-	<img src="./figures/raw/simulation/variance2.png" width="680" height="510">
-	<img src="./figures/raw/simulation/variance1.png" width="640" height="480">
-</section>
+	  <section id="slide-outdoor-experiment" data-background-image="./figures/raw/simulation/outdoor_placement.png" data-background-size="850px">
+	    <h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE MONITORING</h4>
+	    <span class="r-stack" style="margin-top: 45%;margin-left: -10%;">
+	      <ul style="font-size:35px;">
+		<li>To compare with CKF, we use <strong><em style="color:var(--myred);"></em>synthesized data with PDE discretization</em></strong>.</li>
+		<li><strong><em style="color:var(--myred);">$m=15$</em></strong> sensors are deployed and they <strong><em style="color:var(--myred);">automatically build a communication network</em></strong>. </li>
+	      </ul>
+	    </span>
+	  </section>
+	  <section id="slide-outdoor-est-gif" data-background-image="./figures/raw/simulation/hardware-in-loop/est.gif" data-background-size="1000px">
+	    <h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE FIELD VISUALIZATION</h4>
+	  </section>
 
-<section id="slide-outdoor-experiment" data-background-image="./figures/raw/simulation/outdoor_placement.png" data-background-size="850px">
-	<h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE MONITORING</h4>
-	<span class="r-stack" style="margin-top: 45%;margin-left: -10%;">
-		<ul style="font-size:35px;">
-			<li>To compare with CKF, we use <strong><em style="color:var(--myred);"></em>synthesized data with PDE discretization</em></strong>.</li>
-			<li><strong><em style="color:var(--myred);">$m=15$</em></strong> sensors are deployed and they <strong><em style="color:var(--myred);">automatically build a communication network</em></strong>. </li>
-		</ul>
-	</span>
-</section>
-<section id="slide-outdoor-est-gif" data-background-image="./figures/raw/simulation/hardware-in-loop/est.gif" data-background-size="1000px">
-	<h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE FIELD VISUALIZATION</h4>
-</section>
+	  <section id="slide-outdoor-err-gif" data-background-image="./figures/raw/simulation/hardware-in-loop/est_err.gif" data-background-size="1000px">
+	    <h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE FIELD VISUALIZATION</h4>
+	  </section>
 
-<section id="slide-outdoor-err-gif" data-background-image="./figures/raw/simulation/hardware-in-loop/est_err.gif" data-background-size="1000px">
-	<h4 id="experiment" style="margin-top: 0%;">EXPERIMENT: OUTDOOR TEMPERATURE FIELD VISUALIZATION</h4>
-</section>
-
-<section id="slide-outdoor-network" class="center">
-	<h4>EXPERIMENT: NETWORK TRAFFIC</h4>
-	<div style="width: 85%;text-align: center;">
-	<canvas data-chart="bar">
+	  <section id="slide-outdoor-network" class="center">
+	    <h4>EXPERIMENT: NETWORK TRAFFIC</h4>
+	    <div style="width: 85%;text-align: center;">
+	      <canvas data-chart="bar">
 		<!--{
-			"data" : {
-			"datasets" : [{ "backgroundColor": "#981E32" }, { "backgroundColor": "#0582CA" } ]
-			},
-			"options": {
-				"title":{
-					"text": "Mean network traffic v.s. time",
-					"display": true
-				},
-				"scales":{
-					"yAxes": [{
-						"scaleLabel":{
-							"display": true,
-							"fontColor": "black",
-							"fontSize": 30,
-							"labelString": "Mean network traffic/KiB per second"
-						}
-					}],
-					"xAxes": [{
-						"scaleLabel":{
-							"display": true,
-							"fontColor": "black",
-							"fontSize": 30,
-							"labelString": "Time/min"
-						}
-					}]
-				}
-			}
-				
-		}-->
-		,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-		Sensor with 3 neighbors in DSE algorithm, 0.07483333, 0.0795, 0.07466667, 0.07783333, 0.07516667, 0.07616667, 0.07633333, 0.0785, 0.09, 0.08233333, 0.07583333, 0.077, 0.07583333, 0.07716667, 0.0735
-		Center of CKF, 0.82, 1.38, 1.66, 1.38, 1.29, 1.12, 1.38, 0.98, 0.9, 1.18, 1.1, 1.38, 0.84, 1.15, 1.07
-	</canvas>
-	</div>
-	<div class="r-stack" style="margin-bottom: 9%;">
-		<p style="font-size:35px;">In this sensor network with <strong><em style="color:var(--myred);">15 sensors</em></strong>, the means traffic of our DSE algorithm is nearly <strong><em style="color:var(--myred);">$\frac{1}{10}$</em></strong> of that of the center in CKF.</p>
-	</div>
-</section>
+		  "data" : {
+		  "datasets" : [{ "backgroundColor": "#981E32" }, { "backgroundColor": "#0582CA" } ]
+		  },
+		  "options": {
+		  "title":{
+		  "text": "Mean network traffic v.s. time",
+		  "display": true
+		  },
+		  "scales":{
+		  "yAxes": [{
+		  "scaleLabel":{
+		  "display": true,
+		  "fontColor": "black",
+		  "fontSize": 30,
+		  "labelString": "Mean network traffic/KiB per second"
+		  }
+		  }],
+		  "xAxes": [{
+		  "scaleLabel":{
+		  "display": true,
+		  "fontColor": "black",
+		  "fontSize": 30,
+		  "labelString": "Time/min"
+		  }
+		  }]
+		  }
+		  }
 
-<section id="slide-indoor-placement" data-background-image="./figures/raw/simulation/real_room.jpg">
-	<h4 id="experiment">EXPERIMENT: INDOOR TEMPERATURE MONITORING</h4>
-</section>
+		  }-->
+		  ,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+		  Sensor with 3 neighbors in DSE algorithm, 0.07483333, 0.0795, 0.07466667, 0.07783333, 0.07516667, 0.07616667, 0.07633333, 0.0785, 0.09, 0.08233333, 0.07583333, 0.077, 0.07583333, 0.07716667, 0.0735
+		  Center of CKF, 0.82, 1.38, 1.66, 1.38, 1.29, 1.12, 1.38, 0.98, 0.9, 1.18, 1.1, 1.38, 0.84, 1.15, 1.07
+	      </canvas>
+	    </div>
+	    <div class="r-stack" style="margin-bottom: 9%;">
+	      <p style="font-size:35px;">In this sensor network with <strong><em style="color:var(--myred);">15 sensors</em></strong>, the means traffic of our DSE algorithm is nearly <strong><em style="color:var(--myred);">$\frac{1}{10}$</em></strong> of that of the center in CKF.</p>
+	    </div>
+	  </section>
 
-<section id="slide-indoor-placement2" data-background-image="./figures/raw/simulation/indoor_pic.png" data-background-size="900px">
-	<h4 id="experiment">EXPERIMENT: INDOOR TEMPERATURE MONITORING</h4>
-	<span class="r-stack" style="margin-top: 43%;margin-left: -6%;">
-		<ul style="font-size:35px;">
-			<li>We discretize the heat transfer process into <strong><em style="color:var(--myred);">$n=25$ states</em></strong>.</li>
-			<li><strong><em style="color:var(--myred);">$m=12$</em></strong> sensors are deployed. </li>
+	  <section id="slide-indoor-placement" data-background-image="./figures/raw/simulation/real_room.jpg">
+	    <h4 id="experiment">EXPERIMENT: INDOOR TEMPERATURE MONITORING</h4>
+	  </section>
+
+	  <section id="slide-indoor-placement2" data-background-image="./figures/raw/simulation/indoor_pic.png" data-background-size="900px">
+	    <h4 id="experiment">EXPERIMENT: INDOOR TEMPERATURE MONITORING</h4>
+	    <span class="r-stack" style="margin-top: 43%;margin-left: -6%;">
+	      <ul style="font-size:35px;">
+		<li>We discretize the heat transfer process into <strong><em style="color:var(--myred);">$n=25$ states</em></strong>.</li>
+		<li><strong><em style="color:var(--myred);">$m=12$</em></strong> sensors are deployed. </li>
+	      </ul>
+	    </span>
+	  </section>
+
+	  <section id="slide-indoor-gif" class="center" data-background-image="./figures/raw/simulation/indoor_animation.gif" data-background-size="contain">
+	  </section>
+
+	  <!--Event-based-->
+
+	  <section id="slide-extension" class="center">
+	    <h4 id="event-based">Extension: Distributed Estimation with Event-triggered Communications</h4>
+	    <div class="leftcol" style="font-size:30px;">
+	      <ul>
+		<li>Update the residual $z_i(k)$:
+		  $$
+		  \begin{aligned}
+		  z_i(k)=y_i(k+1)-\beta^T\hat\zeta_i(k),\\
+		  \hat\zeta_i(k+1)=S\hat\zeta_i(k)+{\bf{1}_n} z_i(k).
+		  \end{aligned}
+		  $$
+		</li>
+		<li>
+		  Run the synchronization algorithm:
+		  $$
+		  \begin{aligned}
+		  \eta_i(k+1)=\tilde S\eta_i(k)+L_iz_i(k)+\\
+		  {\color{var(--myred)}\tilde B\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k))}
+		  \end{aligned}
+		  $$
+		</li>
+		<li>
+		  Update the local estimate:
+		  $$
+		  \breve x_i(k+1)=mF\eta_i(k+1).
+		  $$
+		</li>
+	      </ul>
+	    </div>
+
+	    <div class="r-stack">
+	      <img src="./figures/raw/event_based.png">
+	    </div>
+	  </section>
+	  <section id="slide-event-based" class="center">
+	    <h2 id="h2_extension" hidden>Extension</h2>
+	    <h3 id="h2_extension" hidden>Extension</h3>
+	    <h4 id="event-based">Event-based Synchronization of Stochastic Linear Systems</h4>
+	    <div class="outline-text-2" id="text-ouralgorithm"></div>
+
+	    <p style="font-size:35px;">
+	    <ul>
+	      <li>Consider the synchronization protocol:
+		$$
+		u_i(k)=\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k)),
+		$$
+		where $\hat\Delta_i(k)\triangleq \Gamma\hat\eta_i(k)\in\mathbb{R}^m$, $\hat\eta_i(k)\triangleq S^{(k-k_s^i)}\eta_i(k_s^i),k\in[k_s^i, k_{s+1}^i)$.</li>
+	      <li>
+		Triggering condition example: event occurs when
+		$$
+		||\hat\eta_i(k)-\eta_i(k)||^2\ge c_0+c_1\rho^k,
+		$$
+		where $c_0,c_1>0$ and $\rho$.
+	      </li>
+	      <li>
+		<strong><em style="color:var(--myred);">Boundedness of error</em></strong> is guaranteed by <strong><em style="color:var(--myblue);">$c$-martingales</em></strong>.
+	      </li>
+	    </p>
+	  </section>
+
+	  <!--Resilient est-->
+
+	  <section id="problems of result" class="center" style="font-size:35px;">
+	    <h4 id="" >Distributed Secure State Estimation</h4>
+
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/from_cen_to_dis.png" width="1000" height="700" style="margin-bottom:-5%; margin-right:0%;">
+	      </div>
+	    </div>
+	    At each time step $k$, instead of solving a linear system synchronization problem, we need to solve an optimization problem:
+	    \begin{align*}
+	    \underset{\mathbf{\check{x}}(k),\mathbf{s}(k)}{\rm minimize} \ & \frac{1}{2} \left\|
+	    \mathbf{\zeta}(k)-\mathbf{G}\mathbf{\check{x}}(k)-\mathbf{\mu}(k) \right\|_{W}^2
+	    +  \mathbf{{f}}(\mathbf{\mu}(k)) \\
+	    \text{ s.t. }&\mathbf{L}\mathbf{\check{x}}(k)=\mathbf{0}
+	    \end{align*}
+	  </section>
+
+	  <section id="dis_step_1">
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/dis_step_1.png" width="800" height="1000" style="margin-top:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section id="dis_step_2">
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/dis_step_2.png" width="800" height="1000" style="margin-top:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section id="dis_step_3">
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/dis_step_3.png" width="800" height="1000" style="margin-top:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section id="dis_step_4">
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/dis_step_4.png" width="800" height="1000" style="margin-top:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section id="dis_step_5">
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/dis_step_5.png" width="800" height="1000" style="margin-top:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section class="center">
+	    <h4 id="h4_problem-formulation">Problem break down</h4>
+	    Our proposed algorithm error is composed of two parts:
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/error_decomp.PNG" width="1200" height="200" style="margin-bottom:0%; margin-right:0%;">
+	      </div>
+	    </div>
+
+	    <h4>Part 1. The optimization problem always generate secure estimation:</h4>
+
+	    <h4>Part 2. The optimization error is bounded by fixed number of iterations.</h4>
+	  </section>
+
+	  <section id="proof structure">
+	    <h4 id="h4_problem-formulation">Proof structure </h4>
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/proof_structure.png" width="1200" height="1000" style="margin-bottom:0%; margin-right:0%;">
+	      </div>
+	    </div>
+	  </section>
+
+	  <section id="security conditions 2-2">
+	    <h3 id="" >1. Condition on observability redundancy</h3 style="font-size:30px;">
+	    For arbitrary corrupted sensor set $\mathcal{C}$ such that $\mathcal{C}\subset\mathcal{I}, |\mathcal{C}|=p$ and $x\in\mathbb{R}^{n},x\neq\mathbf{0}$, the following holds:
+	    \begin{align}
+	    \sum_{i\in\mathcal{C}}\|G_ix\|_1 <\sum_{i\in\mathcal{I}\setminus\mathcal{C}}\|G_i x\|_1.
+								    \end{align}
+
+								    <b>Validating this condition can be computationally hard, but</b>
+								    <li><b>Easy class:</b> If all eigenvalues $A$ has geometric multiplicity 1, then this condition is equivalent to $2p$-sparse observability, and can be validated in polynomial time w.r.t. $n$ and $m$</li>
+								    <li><b>Hard class: </b> For $A$ that has eigenvalue whose geometric multiplicity > 1, there is always an NP hard case </li>
+	  </section>
+
+	  <section id="security conditions 1-1">
+	    <h3 id="" >2. Condition on security regularization function $f$</h3 style="font-size:30px;">
+	    <b>Centralized [Han2019]:</b>
+	    <li>$f$ is convex and symmetric, i.e., $f(x)=f(-x)$ for all $x$ 	</li>
+	    <li>$\lim_{t\rightarrow \infty} \frac{f(tx)}{t}$ is finite for all $x$ <b>(bounded slope)</b></li>
+	    <b>Decentralized:</b>
+	    <li>$f$ is decomposable, i.e., $f(\mu)=\sum_{i=1}^m f_{\rm local} (\mu_i)$ </li>
+	    <li>$f_{\rm local}$ is strongly convex on any neighborhood of $0$ </li>
+	    <b>Candidate:</b>
+	    <div class="imgcontainer">
+	      <div about="" typeof="dcmitype:StillImage" class="figure">
+		<img src="./figures/three_f_compare.png" width="900" height="240" style="margin-top:0%; margin-right:20%;">
+	      </div>
+	  </section>
+
+
+	  <section id="Challenges">
+	    <h2 id=""style="font-size:60px;"> Distributed Resilient Estimation </h2>
+
+	    The main challenge is to make sure that the estimation error is bounded by constant number ($T$) of iterations. 
+	    <h3 id="" > </h3>
+	    <h4 id="h4_problem-formulation">Goal 1: good guess of initial value</h4>
+
+	    How to utilize model information to <b>hot start</b> the initial value.
+
+	    <h4 id="h4_problem-formulation">Goal 2: fast convergence of optimization iteration </h4>
+
+	    How to make sure the distributed opt problem <b>converge fast</b> enough in the presence of attack. 
+	  </section>
+
+	  <section id="Challenge 1">
+	    <h4 id="h4_problem-formulation">Goal 1: </h4>
+	    How to utilize model information to <b>hot start</b> the initial value.
+	    <h4>Our design:</h4> initial value prediction
+	    $$\check{x}_i^{(0)}(k)=A \check{x}_i^{(T)}(k-1)$$
+	  </section>
+
+	  <section id="Challenge 2">
+
+	    <h4 id="h4_problem-formulation">Goal 2: </h4>
+	    How to make sure the distributed opt problem <b>converge fast</b> enough in the presence of attack. 
+
+	    <h4>Our design:</h4> linear convergence: $0<\rho<1$
+		$$\|\check{x}_i^{(t)}(k)-\check{x}^*(k)\|_2\leq \rho^t \|\check{x}_i^{(0)}(k)-\check{x}^*(k)\|_2$$
+
+
+
+	  </section>
+
+	    <section id="Challenge 2-1">
+	      <div>
+		<li>The optimization iteration is based on proximal gradient descent:</li>
+	      </div>
+
+	      <div style="font-size:30px;">
+		$$\check{x}_i^{(t+1)}= \check{x}_i^{(t)}-\beta u_i^{(t)}-\frac{\beta \alpha}{|\mathcal{N}_i|}\sum_{j\in\mathcal{N}_i} \left[\check{x}_i^{(t)} -\check{x}_j^{(t)}\right] - \beta H_i^\top W_i \left(H_i \check{x}_i^{(t)}-\zeta_i -h(W_i(H_i\check{x}_i^{(t)}-\zeta_i))\right)$$
+		$$u_i^{(t+1)}=u_i^{(t)}+\frac{\omega}{|\mathcal{N}_i|}\sum_{j\in\mathcal{N}_i} \left[\check{x}_i^{(t+1)} -\check{x}_j^{(t+1)}\right]. $$
+	      </div>
+	      <div>
+		<li>where convergence rate $\rho$ is:</li>
+	      </div>
+	      $$
+	      \rho\triangleq \frac{1-\underline{q}^2\beta\left( 2/\overline{q}-\beta\right)}{1-\omega\lambda_{\max}(\mathbf{L}^{\frac{1}{2}})}.
+	      $$
+	      And $\underline{q},\overline{q}$ are strongly convex and Lipsitz constants.
+	      <li>By choosing proper step size $\alpha,\beta,\omega$, we can prove that $0 <\rho <1$，and the algorithm converges linearly.</li>
+
+	    </section>
+
+	    <section id="bounded T" class="center">
+	      <h4 id="h4_problem-formulation">Combined together</h4>
+	      Suppose the optimization error is smaller than $\delta$ at time $k$, if we require it is also smaller than $\delta$ at time $k+1$, then
+
+	      \begin{align*}
+	      &\left\|\check{x}_i^{(T)}(k+1)-\check{x}_i^*(k+1)\right\|_2 \\
+	      \leq& \rho^T \left\|\check{x}_i^{(0)}(k+1)-\check{x}_i^*(k+1)\right\|_2\\
+	      =&\left\|A(\check{x}_i^{(T)}(k)-\check{x}_i^*(k))-w(k)+(A\check{e}^{*}_i(k)-\check{e}^{*}_i(k+1)) \right\|_2 \\
+	      \leq& \rho^T \left( \|A\|_2(\delta+\mathcal{B}_{*})+\mathcal{B}_{w}+ \mathcal{B}_{*}\right)\leq \delta
+	      \end{align*}
+
+	      Then the iteration number should satisfy that:
+	      \begin{align*}
+	      T&\geq -\log_{\rho}\left[ \frac{1}{\delta} \left( \|A\|_2(\delta+\mathcal{B}_{*})+\mathcal{B}_{w}+ \mathcal{B}_{*} \right)\right].
+	      \end{align*}
+	    </section>
+
+	    <section>
+	      <b>Theorem (Distributed Secure estimation)</b>
+
+	      Suppose $(A,C)$ satisfy observability redundancy and $f$ satisfy secure and smoothness condition, for arbitrary $\delta>0$, by choosing iteration number $T$ and detector threshold $\gamma$ as 
+	      \begin{align}
+	      T&\geq -2\log_{\rho}\left[ \frac{1}{\delta} \left( \|A\|_2(\delta+\mathcal{B}_{*})+\mathcal{B}_{w}+ \mathcal{B}_{*} \right)\right], \label{eq:chooseT}\\
+	      \gamma&\triangleq\mathcal{B}_\epsilon + \left\|G_i\right\|_2 (\delta+\mathcal{B}_{*}), \label{eq:choose_gamma}
+	      \end{align}
+	      the estimation error of our proposed algorithm is bounded under arbitrary $p$-sparse attack:
+	      \begin{align*}
+	      \left\|\check{x}_i^{(T)}(k)-x(k)\right\|_2 \leq \mathcal{B}_{*}+\delta, \ \forall i\in\mathcal{I}, k\in\mathbb{N},
+	      \end{align*}
+	      where $\mathcal{B}_{*}$ is the maximum optimization bias.
+
+	    </section>
+
+
+
+	    <section id=""IEEE_bus>
+	      <h4>IEEE 68 bus system</h4>
+	      <div class="leftcol" style="font-size:30px;">
+		<ul>
+		  <li style="font-size: 33px;">Bus 1-16: generator bus; Bus 17-68: load bus </li>
+		  <li style="font-size: 33px;">$68\times 2=136$ states (phase angle, angle velocity)</li>
+		  <li style="font-size: 33px;">$68\times 3=204$ measurements (phase angle, angle velocity, elec power)</li>
+		  <li>
+		    $$	\dot{\theta}_{i}(t) =\omega_{i}(t), $$
+		    $$\dot{\omega}_{i}(t) =-\frac{1}{m_{i}}\left[D_{i} \omega_{i}(t)+\sum_{j \in \mathcal{N}_{i}} P_{t i e}^{i j}(t)- P_{i}(t)+w_{i}(t)\right].$$
+		    $$	\left[\begin{array}{ccc}
+		    y_{i_1}(k) & y_{i_2}(k) & y_{i_3}(k)
+		    \end{array}\right]^\top=\left[\begin{array}{ccc}
+		    P_{e l e c, i}(k) & \theta_{i}(k)& \omega_{i}(k)
+		    \end{array}\right]^{\top}+v_{i}(k), $$
+		  </li>
 		</ul>
-	</span>
-</section>
-
-<section id="slide-indoor-gif" class="center" data-background-image="./figures/raw/simulation/indoor_animation.gif" data-background-size="contain">
-</section>
-
-<!--Event-based-->
-<section id="slide-extension" class="center">
-	<h4 id="event-based">Extension: Distributed Estimation with Event-triggered Communications</h4>
-    <div class="leftcol" style="font-size:30px;">
-        <ul>
-            <li>Update the residual $z_i(k)$:
-                $$
-                    \begin{aligned}
-                    z_i(k)=y_i(k+1)-\beta^T\hat\xi_i(k),\\
-                    \hat\xi_i(k+1)=S\hat\xi_i(k)+{\bf{1}_n} z_i(k).
-                    \end{aligned}
-                $$
-            </li>
-            <li>
-                Run the synchronization algorithm:
-                $$
-                    \begin{aligned}
-                    \eta_i(k+1)=\tilde S\eta_i(k)+L_iz_i(k)+\\
-                    {\color{var(--myred)}\tilde B\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k))}
-                    \end{aligned}
-                $$
-            </li>
-            <li>
-                Update the local estimate:
-                $$
-                    \breve x_i(k+1)=mF\eta_i(k+1).
-                $$
-            </li>
-        </ul>
-        </div>
-    
-        <div class="r-stack">
-            <img src="./figures/raw/event_based.png">
-        </div>
-</section>
-<section id="slide-event-based" class="center">
-    <h2 id="h2_extension" hidden>Extension</h2>
-    <h3 id="h2_extension" hidden>Extension</h3>
-	<h4 id="event-based">Event-based Synchronization of Stochastic Linear Systems</h4>
-	<div class="outline-text-2" id="text-ouralgorithm"></div>
-
-	<p style="font-size:35px;">
-        <ul>
-			<li>Consider the synchronization protocol:
-                $$
-                    u_i(k)=\sum_{j=1}^m a_{ij}(\hat\Delta_j(k)-\hat\Delta_i(k)),
-                $$
-        where $\hat\Delta_i(k)\triangleq \Gamma\hat\eta_i(k)\in\mathbb{R}^m$, $\hat\eta_i(k)\triangleq S^{(k-k_s^i)}\eta_i(k_s^i),k\in[k_s^i, k_{s+1}^i)$.</li>
-        <li>
-            Triggering condition example: event occurs when
-            $$
-                ||\hat\eta_i(k)-\eta_i(k)||^2\ge c_0+c_1\rho^k,
-            $$
-            where $c_0,c_1>0$ and $\rho$.
-        </li>
-        <li>
-            <strong><em style="color:var(--myred);">Boundedness of error</em></strong> is guaranteed by <strong><em style="color:var(--myblue);">$c$-martingales</em></strong>.
-        </li>
-	</p>
-</section>
-
-
-<!--Resilient est-->
-<section id="dis problem" class="center">
-	<h4 id="event-based">Extension: Distributed Resilient Estimation</h4>
-	<div class="imgcontainer">
+	      </div>
+	      <div class="r-stack">
 		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/dis_opt_new1.png" width="1000" height="800" style="margin-bottom:0%; margin-right:0%;">
+		  <img src="./figures/resilient/IEEE-68-bus-test-system.png" width="600" height="300" style="margin-top:5%; margin-right:0%;">
 		</div>
-	</div>
-<h5>For benign sensors:</h5>
-<div>do several optimziation+consensus iterations at time $k$ </div>
-<div>$\to$ the optimization problem at time $k$ may not reach its optimum </div>
-<div>$\to$ move on to the next problem at time $k+1$ </div>
-</section>
+	      </div>
+	    </section>
+	    <section style="font-size: 35px;">
+	      <h4>Complexity Challenge</h4>
+	      If 4 sensors are attacked or break down, the number of possible combinations is
+	      $${204 \choose 4}=7.006\times 10^7$$ 
 
-<section id="dis problem 2">
-	<h4 id="event-based">Extension: Distributed Resilient Estimation</h4>
-	<div class="imgcontainer">
+	      It is almost impossible to identify which is the true case in real time. However, 204 local estimators are needed in our method.
+	      <div class="imgcontainer">
 		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/dis_opt_new2.png" width="1000" height="800" style="margin-bottom:0%; margin-right:0%;">
+		  <img src="./figures/resilient/complexity_table.png" width="1200" height="350" style="margin-top:5%; margin-right:0%;">
 		</div>
-	</div>
-	<h5>For malicious sensors:</h5>
-	<div>Only do several consensus iterations </div>
-	<div>$\to$ move on to the next problem at time $k+1$ </div>
-</section>
-<section id="proof structure">
-	<h4 id="h4_problem-formulation">Proof structure </h4>
-	<div class="imgcontainer">
-		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/proof_structure.png" width="1200" height="1000" style="margin-bottom:0%; margin-right:0%;">
-		</div>
-	</div>
-    <div class="imgcontainer">
-		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/error_decomp.PNG" width="1200" height="200" style="margin-bottom:0%; margin-right:0%;">
-		</div>
-	</div>
-</section>
-<section id=""IEEE_bus>
-	<h4>IEEE 68 bus system</h4>
-    <div class="leftcol" style="font-size:30px;">
-        <ul>
-            <li style="font-size: 33px;">Bus 1-16: generator bus; Bus 17-68: load bus </li>
-            <li style="font-size: 33px;">$68\times 2=136$ states (phase angle, angle velocity)</li>
-            <li style="font-size: 33px;">$68\times 3=204$ measurements (phase angle, angle velocity, elec power)</li>
-            <li>
-                $$	\dot{\theta}_{i}(t) =\omega_{i}(t), $$
-	            $$\dot{\omega}_{i}(t) =-\frac{1}{m_{i}}\left[D_{i} \omega_{i}(t)+\sum_{j \in \mathcal{N}_{i}} P_{t i e}^{i j}(t)- P_{i}(t)+w_{i}(t)\right].$$
-                $$	\left[\begin{array}{ccc}
-            y_{i_1}(k) & y_{i_2}(k) & y_{i_3}(k)
-            \end{array}\right]^\top=\left[\begin{array}{ccc}
-            P_{e l e c, i}(k) & \theta_{i}(k)& \omega_{i}(k)
-            \end{array}\right]^{\top}+v_{i}(k), $$
-            </li>
-        </ul>
-    </div>
-	<div class="r-stack">
-		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/IEEE-68-bus-test-system.png" width="600" height="300" style="margin-top:5%; margin-right:0%;">
-		</div>
-	</div>
-</section>
-<section style="font-size: 35px;">
-	<h4>Complexity Challenge</h4>
-    If 4 sensors are attacked or break down, the number of possible combinations is
-	$${204 \choose 4}=7.006\times 10^7$$ 
+	      </div>
+	    </section>
 
-	It is almost impossible to identify which is the true case in real time. However, 204 local estimators are needed in our method.
-	<div class="imgcontainer">
-		<div about="" typeof="dcmitype:StillImage" class="figure">
-			<img src="./figures/resilient/complexity_table.png" width="1200" height="350" style="margin-top:5%; margin-right:0%;">
+	    <section>
+	      <h4>Simulation Results: Distributed Resilient Estimation</h4> 
+	      <div class="imgcontainer">
+		<div >
+		  <p>
+		  <img data-src="./figures/resilient/IEEEbus17-54.png" alt="Figure" style="max-height:400vh" />
+		  </p>
 		</div>
-	</div>
-</section>
+	      </div>
+	    </section>
 
-<section>
-	 <h4>Simulation Results: Distributed Resilient Estimation</h4> 
+	    <section>
+	      <h4>Resilient Estimation for Model Race-car Drifting Control</h4>
+	      <div class="leftcol">
+		<h4 style="margin-top: 0%;">Sensors:</h4>
+		<li>IMU</li>
+		<li>ZED Stereo Camera</li>
+		<li>RealSense Depth Camera</li>
+
+		<h4 style="margin-top: 2%;">Goal</h4>
+		On-board sensor State Estimation for aggressive Driving
+
+		<h4 style="margin-top: 2%;">Challenge</h4>
+		<li>IMU: Violent vibration cause inaccurate</li>
+		<li>Stereo Camera: Image distortion</li>
+		<li>Depth Camera: Slow object detection</li>
+
+	      </div>
+	      <div class="rightcol">
 		<div class="imgcontainer">
-			<div >
-				<p>
-					<img data-src="./figures/resilient/IEEEbus17-54.png" alt="Figure" style="max-height:400vh" />
-				</p>
-			</div>
+		  <div >
+		    <p>
+		    <img data-src="videos/drifting1.gif" alt="Figure" style="max-height:400vh" />
+		    </p>
+		  </div>
 		</div>
-</section>
-<!--Conclusion-->
-<section id="slide-conclusion" class="center">
-	<h2 id="h2_conclusion" hidden>Conclusion</h2>
-	<h3 id="h3_conclusion" hidden>Conclusion</h3>
-	<h4 id="conclusion">CONCLUSION</h4>
-	<div class="outline-text-2" id="text-conclusion"></div>
+	      </div>
+	    </section>
 
-	<ul>
+	    <section>
+	      <h4>Basic set up</h4>
+	      <div class="imgcontainer">
+		<div >
+		  <p>
+		  <img data-src="figures/set_up.png" alt="Figure" style="max-height:600vh" />
+		  </p>
+		</div>
+	      </div>
+	    </section>
+
+
+	    <section>
+	      <h4>Sensor property</h4>
+	      <div class="imgcontainer">
+		<div >
+		  <p>
+		  <img data-src="figures/sensors.png" alt="Figure" style="max-height:600vh" />
+		  </p>
+		</div>
+	      </div>
+	    </section>
+
+	    <section>
+	      <h4>Sensor property</h4>
+	      <div class="imgcontainer">
+		<div >
+		  <p>
+		  <img data-src="figures/sensors2.png" alt="Figure" style="max-height:600vh" />
+		  </p>
+		</div>
+	      </div>
+	    </section>
+	    <section>
+	      <h3>Sensor comparison</h3>
+	      <div class="imgcontainer" style="margin-right: 15%;">
+		<div >
+		  <p>
+		  <img data-src="figures/sensors2.png" alt="Figure" style="max-height:80vh," />
+		  </p>
+		</div>
+	      </div>
+	      <div class="leftcol">
+		<h5>Camera optical flow+IMU estimation:</h5>
+		<li>High frequency (100Hz)</li>
+		<li>No out liers or interrupt</li>
+		<li>Drifting growing error</li>
+	      </div>
+	      <div class="leftcol">
+		<h5>Camera object detection estimation:</h5>
+		<li>Low frequency (30-60Hz)</li>
+		<li>Out liers and interrupt</li>
+		<li>No drifting growing error</li>
+	      </div>
+	    </section>
+
+	    <section>
+	      <h3>Fusion Result</h3>
+
+	      <div class="imgcontainer" >
+		<div >
+		  <p>
+		  <img data-src="figures/our_fusion.png" alt="Figure"  style="max-height:1800vh" />
+		  </p>
+		</div>
+	      </div>
+	    </section>
+
+	    <section>
+	      <h3>Model Racecar drifting </h3>
+	      <video data-autoplay src="videos/final_result.mp4" data-video-loop="true"></video>
+
+	    </section>
+
+
+	    <!--Conclusion-->
+	    <section id="slide-conclusion" class="center">
+	      <h2 id="h2_conclusion" hidden>Conclusion</h2>
+	      <h3 id="h3_conclusion" hidden>Conclusion</h3>
+	      <h4 id="conclusion">CONCLUSION</h4>
+	      <div class="outline-text-2" id="text-conclusion"></div>
+
+	      <ul>
 		<li>Based on a <strong><em style="color:var(--myred);">lossless decomposition</em></strong> of steady-state Kalman filter, we decouple the <strong><em style="color:var(--myred);">local filter</em></strong> from the <strong><em style="color:var(--myred);">synchronization process</em></strong>.</li>
 		<li>We bridge the gap between the problem of <strong><em style="color:var(--myred);">linear system synchronization</em></strong> and <strong><em style="color:var(--myred);">DSE</em></strong>. All of the <strong><em style="color:var(--myred);">strong synchronization algorithms</em></strong> can be applied in our framework.</li>
 		<li>By performing model reduction, the <strong><em style="color:var(--myred);">message complexity</em></strong> can be reduced to <strong><em style="color:var(--myred);">$O(\min(m, n))$</em></strong>.</li>
 		<li>The <strong><em style="color:var(--myred);">performance</em></strong> of our algorithm is <strong><em style="color:var(--myred);">analyzed</em></strong> and <strong><em style="color:var(--myred);">validated</em></strong> with simulation and experiments.</li>
-        <li>The result can be extended in various cases.</li>
-	</ul>
-	<div class="slide-footer"><br></div>
-</section>
+		<li>A distributed secure estimation scheme is proposed via decentralized optimization of specifically designed optimization problem.</li>
+		<li>The result can be extended to incorporate event-based fusion strategies.</li>
+	      </ul>
+	      <div class="slide-footer"><br></div>
+	    </section>
 
-<section id="slide-conclusion" class="center">
-	<h4 id="conclusion">References</h4>
-<ul>
-<li><a id="Yan2022">[Yan2022]</a> <a name="Yan2022"></a>J. Yan, X. Yang, Y. Mo and K. You, "A Distributed Implementation of Steady-State Kalman Filter," in IEEE Transactions on Automatic Control, 2022.</li>
-		<li><a id="Yan2022">[Yan2022]</a> <a name="Yan2022"></a>J. Yan, Y. Mo and H. Ishii, "Event-Based Control for Synchronization of Stochastic Linear Systems with Application to Distributed Estimation," in IFAC-PapersOnLine, 2022, 55(13), pp. 115-120.</li>
+	    <section id="slide-conclusion" class="center">
+	      <h4 id="conclusion">References</h4>
+	      <ul>
+		<li>[Han2019] Duo Han, Yilin Mo and Lihua Xie, "Convex Optimization Based State Estimation against Sparse Integrity Attacks", in IEEE Transactions on Automatic Control, June 2019, Volume 64, Issue 6, Pages 2383-2395</li>
+		<li>[Liu2020] X. Liu, Y. Mo and E. Garone, "Local Decomposition of Kalman Filters and its Application for Secure State Estimation", in IEEE Transactions on Automatic Control, vol. 66, no. 10, pp. 5037-5044, Oct. 2021, doi: 10.1109/TAC.2020.3044854.</li>
+		<li><a id="Yan2022">[Yan2022]</a> <a name="Yan2022"></a>J. Yan, X. Yang, Y. Mo and K. You, "A Distributed Implementation of Steady-State Kalman Filter," in IEEE Transactions on Automatic Control, 2022.</li>
 		<li><a id="Li2022">[Li2022]</a> <a name="Li2022"></a>Z. Li and Y. Mo, "Efficient secure state estimation against sparse integrity attack for regular linear system," in International Journal of Robust and Nonlinear Control, 2022.</li>
-</ul>
-<div class="slide-footer"><br></div>
-</section>
+	      </ul>
+	      <div class="slide-footer"><br></div>
+	    </section>
 
-<section id="slide-thanks" class="center">
-	<div style="font-size:100px;text-align:center;">
+	    <section id="slide-thanks" class="center">
+	      <div style="font-size:100px;text-align:center;">
 		<strong>Thanks!</strong>
-	</div>
-</section>
+	      </div>
+	    </section>
 
-<section id="slide-bibliography">
-	<h3 id="h3_bibliography" hidden>Bibliography</h3>
-	<h4 id="bibliography">Bibliography</h4>
-	<ul class='org-ref-bib'>
+	    <section id="slide-bibliography">
+	      <h3 id="h3_bibliography" hidden>Bibliography</h3>
+	      <h4 id="bibliography">Bibliography</h4>
+	      <ul class='org-ref-bib'>
 		<li><a id="Mao2012">[Mao2012]</a> <a name="Mao2012"></a>X. Mao, X. Miao, Y. He, X. Li and Y. Liu, "CitySee: Urban CO2 monitoring with sensors," 2012 Proceedings IEEE INFOCOM, 2012, pp. 1611-1619.</li>
 		<li><a id="Jia2020">[Jia2020]</a> <a name="Jia2020"></a>Q. Jia, J. Tang, J. Wu, X. Hu, Y. Lin, and H. Xia. "Reinforcement learning for green and reliable data center," Chinese Journal of Intelligent Science and Technology, 2020, 2(4): 341-347.</li>
 		<li><a id="Shehabi2016">[Shehabi2016]</a> <a name="Shehabi2016"></a>A. Shehabi, S. Smith, D Sartor and R. Brown. "United States Data Center Energy Usage Report," 2016.</li>
-		
+
 		<li><a id="Olfati-Saber2009">[Olfati-Saber2009]</a> <a name="Olfati-Saber2009"></a>R. Olfati-Saber, "Kalman-Consensus Filter : Optimality, stability, and performance," Proceedings of the 48h IEEE Conference on Decision and Control (CDC) held jointly with 2009 28th Chinese Control Conference, 2009, pp. 7036-7042.</li>
 		<li><a id="Li2018">[Li2018]</a> <a name="Li2018"></a>W. Li, G. Wei, D. W. C. Ho and D. Ding, "A Weightedly Uniform Detectability for Sensor Networks," in IEEE Transactions on Neural Networks and Learning Systems, vol. 29, no. 11, pp. 5790-5796, Nov. 2018.</li>
 		<li><a id="Battistelli2014">[Battistelli2014]</a> <a name="Battistelli2014"></a>G. Battistelli and L. Chisci, “Kullback–Leibler average, consensus on probability densities, and distributed state estimation with guaranteed stability,” Automatica, vol. 50, no. 3, pp. 707–718, 2014.</li>
 
 		<li><a id="He2020">[He2020]</a> <a name="He2020"></a>S. He, H. Shin, S. Xu and A. Tsourdos, "Distributed estimation over a low-cost sensor network: A Review of state-of-the-art," in Information Fusion, vol. 54, pp. 21-43, 2020.</li>
 
-		
+
 		<li><a id="Gu2012">[Gu2012]</a> <a name="Gu2012"></a>G. Gu, L. Marinovici and F. L. Lewis, "Consensusability of Discrete-Time Dynamic Multiagent Systems," in IEEE Transactions on Automatic Control, vol. 57, no. 8, pp. 2085-2089, Aug. 2012.</li>
 		<li><a id="Xu2020">[Xu2020]</a> <a name="Xu2020"></a>L. Xu, Y. Mo and L. Xie, "Distributed Consensus Over Markovian Packet Loss Channels," in IEEE Transactions on Automatic Control, vol. 65, no. 1, pp. 279-286, Jan. 2020.</li>
 		<li><a id="Liu2016">[Liu2016]</a> <a name="Liu2016"></a>X. Liu, J. Lam, W. Yu and G. Chen, "Finite-Time Consensus of Multiagent Systems With a Switching Protocol," in IEEE Transactions on Neural Networks and Learning Systems, vol. 27, no. 4, pp. 853-862, April 2016.</li>
@@ -1248,188 +1392,143 @@
 		<li><a id="You2011">[You2011]</a> <a name="You2011"></a>K. You and L. Xie, "Network Topology and Communication Data Rate for Consensusability of Discrete-Time Multi-Agent Systems," in IEEE Transactions on Automatic Control, vol. 56, no. 10, pp. 2262-2275, Oct. 2011.</li>
 		<li><a id="Zhang2021">[Zhang2021]</a> <a name="Zhang2021"></a>J. -L. Zhang, X. Chen and G. Gu, "State Consensus for Discrete-Time Multiagent Systems Over Time-Varying Graphs," in IEEE Transactions on Automatic Control, vol. 66, no. 1, pp. 346-353, Jan. 2021.</li>
 
-	</ul>
-	<div class="slide-footer"><br></div>
-</section>
-
-<section id="slide-backup">
-	<h4>EXPERIMENT: NETWORK TRAFFIC</h4>
-	<div style="width: 85%;text-align: center;">
-	<canvas data-chart="bar">
-		<!--{
-			"data" : {
-			"datasets" : [{ "backgroundColor": "#981E32" }, { "backgroundColor": "#0582CA" } ]
-			},
-			"options": {
-				"title":{
-					"text": "Mean network traffic v.s. time",
-					"display": true
-				},
-				"scales":{
-					"yAxes": [{
-						"scaleLabel":{
-							"display": true,
-							"fontColor": "black",
-							"fontSize": 30,
-							"labelString": "Mean network traffic/KiB per second"
-						}
-					}],
-					"xAxes": [{
-						"scaleLabel":{
-							"display": true,
-							"fontColor": "black",
-							"fontSize": 30,
-							"labelString": "Time/min"
-						}
-					}]
-				}
-			}
-				
-		}-->
-		,0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-		Sensor with 3 neighbors in DSE algorithm, 0.69, 0.07483333, 0.0795, 0.07466667, 0.07783333, 0.07516667, 0.07616667, 0.07633333, 0.0785, 0.09, 0.08233333, 0.07583333, 0.077, 0.07583333, 0.07716667, 0.0735
-		Center of CKF, 1.32, 0.82, 1.38, 1.66, 1.38, 1.29, 1.12, 1.38, 0.98, 0.9, 1.18, 1.1, 1.38, 0.84, 1.15, 1.07
-	</canvas>
-	</div>
-	<div class="r-stack" style="margin-bottom: 9%;">
-		<p style="font-size:35px;">Let each sensor <strong><em style="color:var(--myred);">broadcast its $C_i$</em></strong> at the beginning so that each sensor can have access to <strong><em style="color:var(--myred);">global information</em></strong> which it needs.</p>
-	</div>
-</section>
-</section>
+	      </ul>
+	      <div class="slide-footer"><br></div>
+	    </section>
+	</section>
 
 
+	<style type="text/css"> div.flushright{text-align:right;} </style>
+	<script src="./reveal.js/plugin/chart/Chart.min.js"></script>
+	<script src="./reveal.js/plugin/chart/plugin.js"></script>
+	<script src="./reveal.js/plugin/mine/chartjs-plugin-colorschemes.js"></script>
+	<script src="./reveal.js/plugin/mine/bokeh-2.2.2.min.js"></script>
+	<script src="./reveal.js/plugin/mine/bokeh-widgets-2.2.2.min.js"></script>
+	<script src="./reveal.js/plugin/mine/bokeh-tables-2.2.2.min.js"></script>
+	<script type="text/javascript" sync src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
 
-<style type="text/css"> div.flushright{text-align:right;} </style>
-<script src="./reveal.js/plugin/chart/Chart.min.js"></script>
-<script src="./reveal.js/plugin/chart/plugin.js"></script>
-<script src="./reveal.js/plugin/mine/chartjs-plugin-colorschemes.js"></script>
-<script src="./reveal.js/plugin/mine/bokeh-2.2.2.min.js"></script>
-<script src="./reveal.js/plugin/mine/bokeh-widgets-2.2.2.min.js"></script>
-<script src="./reveal.js/plugin/mine/bokeh-tables-2.2.2.min.js"></script>
-<script type="text/javascript" sync src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+	<script src="./reveal.js/dist/reveal.js"></script>
+	<script src="./reveal.js/plugin/notes/notes.js"></script>
+	<script src="./reveal.js/plugin/search/search.js"></script>
+	<script src="./reveal.js/plugin/zoom/zoom.js"></script>
+	<script>
+	  // Full list of configuration options available here:
+	  // https://github.com/hakimel/reveal.js#configuration
 
-<script src="./reveal.js/dist/reveal.js"></script>
-<script src="./reveal.js/plugin/notes/notes.js"></script>
-<script src="./reveal.js/plugin/search/search.js"></script>
-<script src="./reveal.js/plugin/zoom/zoom.js"></script>
-<script>
-// Full list of configuration options available here:
-// https://github.com/hakimel/reveal.js#configuration
+	  Reveal.initialize({
+	    controls: true,
+	    progress: true,
+	    history: true,
+	    center: false,
+	    slideNumber: 'c',
+	    rollingLinks: false,
+	    keyboard: true,
+	    mouseWheel: true,
+	    fragmentInURL: true,
+	    hashOneBasedIndex: false,
+	    pdfSeparateFragments: false,
 
-Reveal.initialize({
-controls: true,
-progress: true,
-history: true,
-center: false,
-slideNumber: 'c',
-rollingLinks: false,
-keyboard: true,
-mouseWheel: true,
-fragmentInURL: true,
-hashOneBasedIndex: false,
-pdfSeparateFragments: false,
+	    overview: true,
 
-overview: true,
-
-transition: 'fade',
-transitionSpeed: 'default',
-margin: 0.01,
+	    transition: 'fade',
+	    transitionSpeed: 'default',
+	    margin: 0.01,
 
 
-// Optional libraries used to extend reveal.js
-dependencies: [
-{src:'./reveal.js/plugin/spotlight/spotlight.js'},
-{src: './reveal.js/plugin/math/math-gc.js', async:true},
-{src: './reveal.js/plugin/toc-progress/toc-progress.js', async: true, callback: function() { toc_progress.initialize('reduce', 'rgba(120,138,130,0.2)', 'body'); }}
-],
+	    // Optional libraries used to extend reveal.js
+	    dependencies: [
+	      {src:'./reveal.js/plugin/spotlight/spotlight.js'},
+	      {src: './reveal.js/plugin/math/math-gc.js', async:true},
+	      {src: './reveal.js/plugin/toc-progress/toc-progress.js', async: true, callback: function() { toc_progress.initialize('reduce', 'rgba(120,138,130,0.2)', 'body'); }}
+	    ],
 
-chart: {
-  defaults: {
-	  	global:{
-			defaultFontSize: 20,
-			title:{
-				display: true,
-				fontColor: "black",
-				fontSize: 40
-			},
-			scales: {
-				scaleLabel: { fontColor: "black"}, 
-				gridLines: { color: "#FFF", zeroLineColor: "#FFF" }
-			} ,
-			legend:{
-					display: true,
-					labels: {fontColor: "black", fontSize: 30 }
-			}
+	    chart: {
+	      defaults: {
+		global:{
+		  defaultFontSize: 20,
+		  title:{
+		    display: true,
+		    fontColor: "black",
+		    fontSize: 40
+		  },
+		  scales: {
+		    scaleLabel: { fontColor: "black"}, 
+		    gridLines: { color: "#FFF", zeroLineColor: "#FFF" }
+		  } ,
+		  legend:{
+		    display: true,
+		    labels: {fontColor: "black", fontSize: 30 }
+		  }
 		}
-	}
-},
+	      }
+	    },
 
-plugins: [RevealNotes, RevealSearch, RevealZoom, RevealChart], spotlight: {toggleSpotlightOnMouseDown: false}, keyboard: {84: function() { RevealSpotlight.toggleSpotlight() }}, width: 1366, height: 768, margin: 0.1,
-audioStartAtFragment: true,
-  audio: {
-    advance: -1, autoplay: false, defaultDuration: 0, defaultAudios: false, playerOpacity: 0.8, playerStyle: 'position: fixed; bottom: 9.5vh; left: 0%; width: 30%; height:30px; z-index: 33;' },
-anything: [
-        // Following initialization code for class animate from anything-demo.html.
-        // Copyright (c) 2016 Asvin Goel, under The MIT License (MIT).
-	{className: "animate",  initialize: (function(container, options){
+	    plugins: [RevealNotes, RevealSearch, RevealZoom, RevealChart], spotlight: {toggleSpotlightOnMouseDown: false}, keyboard: {84: function() { RevealSpotlight.toggleSpotlight() }}, width: 1366, height: 768, margin: 0.1,
+	    audioStartAtFragment: true,
+	    audio: {
+	      advance: -1, autoplay: false, defaultDuration: 0, defaultAudios: false, playerOpacity: 0.8, playerStyle: 'position: fixed; bottom: 9.5vh; left: 0%; width: 30%; height:30px; z-index: 33;' },
+	    anything: [
+	      // Following initialization code for class animate from anything-demo.html.
+	      // Copyright (c) 2016 Asvin Goel, under The MIT License (MIT).
+	      {className: "animate",  initialize: (function(container, options){
 		Reveal.addEventListener( 'fragmentshown', function( event ) {
-			if (typeof event.fragment.beginElement === "function" ) {
-				event.fragment.beginElement();
-			}
+		  if (typeof event.fragment.beginElement === "function" ) {
+		    event.fragment.beginElement();
+		  }
 		});
 		Reveal.addEventListener( 'fragmenthidden', function( event ) {
-			if (event.fragment.hasAttribute('data-reverse') ) {
-				var reverse = event.fragment.parentElement.querySelector('[id=\"' + event.fragment.getAttribute('data-reverse') + '\"]');
-				if ( reverse && typeof reverse.beginElement === "function" ) {
-					reverse.beginElement();
-				}
-			}
+		  if (event.fragment.hasAttribute('data-reverse') ) {
+		    var reverse = event.fragment.parentElement.querySelector('[id=\"' + event.fragment.getAttribute('data-reverse') + '\"]');
+		    if ( reverse && typeof reverse.beginElement === "function" ) {
+		      reverse.beginElement();
+		    }
+		  }
 		});
 		if ( container.getAttribute("data-svg-src") ) {
-			var xhr = new XMLHttpRequest();
-			xhr.onload = function() {
-				if (xhr.readyState === 4) {
-					var svg = container.querySelector('svg');
-					container.removeChild( svg );
-					container.innerHTML = xhr.responseText + container.innerHTML;
-					if ( svg ) {
-						container.querySelector('svg').innerHTML = container.querySelector('svg').innerHTML + svg.innerHTML;
-					}
-				}
-				else {
-					console.warn( "Failed to get file. ReadyState: " + xhr.readyState + ", Status: " + xhr.status);
-				}
-			};
-			xhr.open( 'GET', container.getAttribute("data-svg-src"), true );
-			xhr.send();
+		  var xhr = new XMLHttpRequest();
+		  xhr.onload = function() {
+		    if (xhr.readyState === 4) {
+		      var svg = container.querySelector('svg');
+		      container.removeChild( svg );
+		      container.innerHTML = xhr.responseText + container.innerHTML;
+		      if ( svg ) {
+			container.querySelector('svg').innerHTML = container.querySelector('svg').innerHTML + svg.innerHTML;
+		      }
+		    }
+		    else {
+		      console.warn( "Failed to get file. ReadyState: " + xhr.readyState + ", Status: " + xhr.status);
+		    }
+		  };
+		  xhr.open( 'GET', container.getAttribute("data-svg-src"), true );
+		  xhr.send();
 		}
-	}) },
-	{className: "randomPic",
-	 defaults: {imgalt: "Dummy alt text",
-		    imgcaption: "Image by {name}",
-		    choices: [ {name: "dummyname", path: "dummypath"} ]},
-	 initialize: (function(container, options){
-	     var choice = Math.trunc( Math.random()*(options.choices.length) );
-	     var img = "<img src='" + options.choices[choice].path + "' alt='" + options.choices[choice].imgalt + "' />";
-	     var caption = options.imgcaption.replace(new RegExp('\{name\}', 'gm'), options.choices[choice].name);
-	     container.innerHTML = img + caption;
-	 }) },
-	{className: "notes",
-	 initialize: (function(container, options){
-	     container.addEventListener('click', function(e) { Reveal.getPlugins().notes.open(); });
-	 }) }
-],
-coursemod: { enabled: true, shown: false },
-});
-</script>
+	      }) },
+	      {className: "randomPic",
+		defaults: {imgalt: "Dummy alt text",
+		  imgcaption: "Image by {name}",
+		  choices: [ {name: "dummyname", path: "dummypath"} ]},
+		initialize: (function(container, options){
+		  var choice = Math.trunc( Math.random()*(options.choices.length) );
+		  var img = "<img src='" + options.choices[choice].path + "' alt='" + options.choices[choice].imgalt + "' />";
+		  var caption = options.imgcaption.replace(new RegExp('\{name\}', 'gm'), options.choices[choice].name);
+		  container.innerHTML = img + caption;
+		}) },
+	      {className: "notes",
+		initialize: (function(container, options){
+		  container.addEventListener('click', function(e) { Reveal.getPlugins().notes.open(); });
+		}) }
+	    ],
+	    coursemod: { enabled: true, shown: false },
+	  });
+	</script>
 
-<script>
-Reveal.configure({
-  keyboard: {
-    39: 'next', // go to the next slide when the ENTER key is pressed
-    37: 'prev' // don't do anything when SPACE is pressed (i.e. disable a reveal.js default binding)
-  }
-})
-</script>
-</body>
+	<script>
+	  Reveal.configure({
+	    keyboard: {
+	      39: 'next', // go to the next slide when the ENTER key is pressed
+	      37: 'prev' // don't do anything when SPACE is pressed (i.e. disable a reveal.js default binding)
+	    }
+	  })
+	</script>
+  </body>
 </html>
